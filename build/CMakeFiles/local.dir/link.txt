@@ -1,0 +1,2 @@
+/usr/bin/ar qc liblocal.a  CMakeFiles/local.dir/Shader.cpp.o
+/usr/bin/ranlib liblocal.a

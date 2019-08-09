@@ -1,0 +1,1 @@
+/usr/bin/clang++  -g   CMakeFiles/out.dir/main.cpp.o  -o out liblocal.a /usr/lib/libGLEW.so -lglfw3 -lpthread -lX11 -lXxf86vm -lXrandr -ldl /usr/lib/libGLX.so /usr/lib/libOpenGL.so 
