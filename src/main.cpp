@@ -50,7 +50,11 @@ int main(){
     ShaderBuilder builder;
     std::vector<std::string> include_directories;
     builder.add_include_dir("/shared/projects/raytracer/shaders/");
-    builder.add_module("../shaders/pass0.frag");
+    builder.add_module("../shaders/main.frag");
+    auto module = builder.get_module("mainfrag");
+    if(module.has_value()) 
+        std::cout << module.value();
+
 
     return 0;
 }//main

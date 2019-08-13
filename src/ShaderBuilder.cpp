@@ -54,8 +54,59 @@ std::string ShaderBuilder::read_file(std::string filename, std::error_code& ec){
 
 void ShaderBuilder::add_module(std::string filename) {
     std::error_code ec;
-    auto parsed = parse(filename, ec);
+    auto module = parse(filename, ec);
+    if(!ec) modules.push_back(module);
 }
+std::optional<ShaderModule> ShaderBuilder::get_module(std::string module_name) {
+    for(auto& m : modules) {
+        if(m.name == module_name) {
+            return std::optional<ShaderModule>(m);
+        }
+    }
+    return std::optional<ShaderModule>();
+}
+
+void ShaderBuilder::add_include_dir(std::string dir){
+    add_include_dir(dir, last_ec);
+}
+
+void ShaderBuilder::add_include_dir(std::string dir, std::error_code& ec){
+    fs::path dirpath(dir);
+    if(fs::exists(dirpath, ec) && !ec &&
+       fs::is_directory(dirpath, ec) && !ec) {
+        include_dirs.push_back(dir);
+    }
+}
+
+std::string ShaderBuilder::build(std::string init_module_name, std::error_code& ec){
+    return "ok";
+}
+ShaderType ShaderBuilder::detect_type(std::string filename){
+    ShaderType detected_type = ShaderType::NONE;
+    //NOTE: not perfect but certainly good enough
+    auto match_ext = [](std::string str, std::string ext) -> bool {
+                         [[maybe_unused]]std::smatch match;
+                         auto regex = std::regex(".+\\." + ext ,
+                                                 std::regex_constants::ECMAScript);
+                         return std::regex_match(str, match, regex);
+                     };
+
+         if(match_ext(filename, "vert"))
+        detected_type = ShaderType::VERT;
+    else if(match_ext(filename, "frag"))
+        detected_type = ShaderType::FRAG;
+    else if(match_ext(filename, "geom"))
+        detected_type = ShaderType::GEOM;
+    else if(match_ext(filename, "comp"))
+        detected_type = ShaderType::COMP;
+    else if(match_ext(filename, "tess_ctrl"))
+        detected_type = ShaderType::TESS_CTRL;
+    else if(match_ext(filename, "tess_eval"))
+        detected_type = ShaderType::TESS_EVAL;
+
+    return detected_type;
+}
+
 ShaderModule ShaderBuilder::parse(const std::string filename) {
     return parse(filename, last_ec);
 }
@@ -64,6 +115,7 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
     std::string source = read_file(filename, ec);
     std::string output;
     ShaderModule module;
+    module.type = detect_type(filename);
 
     if(ec) return module;
 
@@ -156,8 +208,11 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
             std::string used_module_name = match[2];
 
             if(*(used_module_name.begin()) == '"' &&
-                *(used_module_name.end()-1) == '"')
+               *(used_module_name.end()-1) == '"')
             {
+                used_module_name.erase(0,1);
+                used_module_name.erase(used_module_name.size()-1,1);
+
                 module.used_modules.push_back(used_module_name);
 
                 edit_at(match.position(0), match[0], "");
@@ -171,9 +226,13 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
                             "more than one type definition");
 
             if(*(module_type.begin()) == '"' &&
-                *(module_type.end()-1) == '"')
+               *(module_type.end()-1) == '"')
             {
-                if(module_type == "NONE") module.type = ShaderType::NONE;
+
+                module_type.erase(0,1);
+                module_type.erase(module_type.size()-1,1);
+
+                     if(module_type == "NONE") module.type = ShaderType::NONE;
                 else if(module_type == "FRAG") module.type = ShaderType::FRAG;
                 else if(module_type == "VERT") module.type = ShaderType::VERT;
                 else if(module_type == "GEOM") module.type = ShaderType::GEOM;
@@ -231,14 +290,3 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
     return module;
 }
 
-void ShaderBuilder::add_include_dir(std::string dir){
-    add_include_dir(dir, last_ec);
-}
-
-void ShaderBuilder::add_include_dir(std::string dir, std::error_code& ec){
-    fs::path dirpath(dir);
-    if(fs::exists(dirpath, ec) && !ec &&
-        fs::is_directory(dirpath, ec) && !ec) {
-        include_dirs.push_back(dir);
-    }
-}
