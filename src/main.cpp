@@ -50,10 +50,24 @@ int main(){
     ShaderBuilder builder;
     std::vector<std::string> include_directories;
     builder.add_include_dir("/shared/projects/raytracer/shaders/");
-    builder.add_module("../shaders/main.frag");
-    auto module = builder.get_module("mainfrag");
-    if(module.has_value()) 
-        std::cout << module.value();
+    builder.add_module("main.frag");
+    builder.add_module("quaternion.glsl");
+    builder.add_module("constants.glsl");
+    builder.add_module("rays_util.glsl");
+    builder.add_module("random.glsl");
+
+    std::error_code ec;
+
+    auto source = builder.build("mainfrag",ec);
+
+    CON();
+    auto sorted_modules = builder.get_sorted_modules_list();
+    for(auto m : sorted_modules) std::cout << m.name << "\n";
+
+    CON();
+    std::cout << source;
+
+    
 
 
     return 0;

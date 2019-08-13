@@ -14,6 +14,7 @@ static std::error_code make_error_code(ShaderBuilderErrc e) {
     return {static_cast<int>(e), theShaderBuilderErrCategory};
 }
 
+
 std::string ShaderBuilder::read_file(std::string filename, std::error_code& ec){
 
     bool file_opening_status = false;
@@ -52,11 +53,14 @@ std::string ShaderBuilder::read_file(std::string filename, std::error_code& ec){
     return file_contents;
 }
 
+
+
 void ShaderBuilder::add_module(std::string filename) {
     std::error_code ec;
     auto module = parse(filename, ec);
     if(!ec) modules.push_back(module);
 }
+
 std::optional<ShaderModule> ShaderBuilder::get_module(std::string module_name) {
     for(auto& m : modules) {
         if(m.name == module_name) {
@@ -66,9 +70,34 @@ std::optional<ShaderModule> ShaderBuilder::get_module(std::string module_name) {
     return std::optional<ShaderModule>();
 }
 
+std::optional<std::reference_wrapper<ShaderModule>>
+ShaderBuilder::get_module_mut(std::string module_name){
+    for(auto& m : modules) {
+        if(m.name == module_name) {
+            return std::optional<std::reference_wrapper<ShaderModule>>(m);
+        }
+    }
+    return std::optional<std::reference_wrapper<ShaderModule>>();
+}
+
+
+
+
+const std::vector<ShaderModule>& ShaderBuilder::get_modules_list() {
+    return modules;
+}
+
+const std::vector<ShaderModule>& ShaderBuilder::get_sorted_modules_list() {
+    return sorted_modules;
+}
+
+
+
 void ShaderBuilder::add_include_dir(std::string dir){
     add_include_dir(dir, last_ec);
 }
+
+
 
 void ShaderBuilder::add_include_dir(std::string dir, std::error_code& ec){
     fs::path dirpath(dir);
@@ -78,9 +107,100 @@ void ShaderBuilder::add_include_dir(std::string dir, std::error_code& ec){
     }
 }
 
+
+
 std::string ShaderBuilder::build(std::string init_module_name, std::error_code& ec){
-    return "ok";
+    std::string ret = "";
+    auto opt_init_module = get_module_mut(init_module_name);
+    if(opt_init_module.has_value())
+        topo_sort_modules(opt_init_module.value(),ec);
+    else {
+        ERROR("init build module ", init_module_name, " not found");
+        return ret;
+    }
+
+    size_t final_size = 0;
+    for(auto m : modules) final_size += m.source.size();
+    ret.reserve(final_size);
+
+    for(auto m : sorted_modules) ret += m.source;
+
+    return ret;
 }
+
+
+
+//TODO: Optimize that!
+/// Performs module topological sort so modules are included in correct order
+/// Fails if finds circular dependency or missing dependency
+///
+/// @param ec error_code - unused
+/// @return true unless it fails
+///
+bool ShaderBuilder::topo_sort_modules(ShaderModule& root_module,
+                                      [[maybe_unused]]std::error_code& ec) {
+   for(auto& m : modules){
+        m.temp_mark = false;
+        m.perm_mark = false;
+    }
+
+    sorted_modules.clear();
+    sorted_modules.reserve(modules.size());
+
+    auto opt_init = get_module("mainfrag");
+    if(! opt_init.has_value()) return false;
+
+    if(! topo_sort_recursive_visit(opt_init.value()) ){
+        ERROR("failed to resolve dependencies");
+        return false;
+    }
+    return true;
+}
+
+
+
+bool ShaderBuilder::topo_sort_recursive_visit(ShaderModule& module){
+    if(module.perm_mark == true) return true;
+    if(module.temp_mark == true) return false;
+
+    module.temp_mark = true;
+
+    for(auto& dep_name : module.used_modules) {
+        auto opt_dep = get_module_mut(dep_name); // NOTE: opt_ prefix marks optional
+        if(opt_dep.has_value()) {
+            bool is_acyclic = topo_sort_recursive_visit(opt_dep.value());
+            if(!is_acyclic) {
+                ERROR("circular dependency ", dep_name);
+                __CON("used by ", module.name);
+                return false;
+            };
+        } else {
+            ERROR("missing module ", dep_name);
+            __CON("used by ", module.name);
+            return false;
+        }
+    }
+
+    module.temp_mark = false;
+    module.perm_mark = true;
+
+    sorted_modules.push_back(module);
+    return true;
+}
+
+/// Detects shader type depending on filename extension
+///
+/// For filename with a given extension it will return
+/// "*.vert" - VERT
+/// "*.frag" - FRAG
+/// "*.geom" - GEOM
+/// "*.comp" - COMP
+/// "*.tess_ctrl" - TESS_CTRL
+/// "*.tess_eval" - TESS_EVAL
+///
+/// @param filename name of the file
+/// @return return detected type or type NONE
+///
 ShaderType ShaderBuilder::detect_type(std::string filename){
     ShaderType detected_type = ShaderType::NONE;
     //NOTE: not perfect but certainly good enough
@@ -107,9 +227,12 @@ ShaderType ShaderBuilder::detect_type(std::string filename){
     return detected_type;
 }
 
+
+//TODO: multipass
 ShaderModule ShaderBuilder::parse(const std::string filename) {
     return parse(filename, last_ec);
 }
+
 ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& ec) {
 
     std::string source = read_file(filename, ec);
@@ -136,7 +259,7 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
 
 
 
-    std::regex preprocess_directive_regex("((?:__)[a-z_]+)(?:\\s+)(.*)",
+    std::regex preprocess_directive_regex("((?:__)[a-z_]+)(?:\\s+)(.*)\\n",
                                         std::regex_constants::ECMAScript
                                         // std::regex_constants::multiline
                                         );
@@ -265,16 +388,22 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
         inserted_chars += insertion.size();
     }
 
-    if(inserted_chars > deleted_chars) output.reserve(source.size() +
-                                                        inserted_chars -
-                                                        deleted_chars);
-    output.assign(source);
+    std::string header =
+        "\n//=============================== " + module.name + "\n";
+
+    if(inserted_chars > deleted_chars) output.reserve(header.size() +
+                                                      source.size() +
+                                                      inserted_chars -
+                                                      deleted_chars);
+    output.assign(header + source);
 
     deleted_chars = 0;
     inserted_chars = 0;
 
     for(auto const& edit : edit_map) {
-        auto pos = edit.first +
+        auto pos =
+            edit.first +
+            header.size() +
             inserted_chars -
             deleted_chars;
         auto const& deletion = edit.second.first; 

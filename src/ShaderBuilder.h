@@ -72,18 +72,35 @@ namespace {
 class ShaderBuilder {
 public:
     std::string read_file(std::string filename, std::error_code& ec);
+
     void add_module(std::string filename);
+
     std::optional<ShaderModule> get_module(std::string module_name);
+    std::optional<std::reference_wrapper<ShaderModule>>
+    get_module_mut(std::string module_name);
+
+    const std::vector<ShaderModule>& get_modules_list();
+    const std::vector<ShaderModule>& get_sorted_modules_list();
+
     void add_include_dir(std::string dir);
+
     void add_include_dir(std::string dir, std::error_code& ec);
 
     std::string build(std::string init_module_name, std::error_code& ec);
+
 private:
+
+    bool topo_sort_modules(ShaderModule& root_module,std::error_code& ec);
+    bool topo_sort_recursive_visit(ShaderModule& module);
+
     ShaderType detect_type(std::string filename);
+
     ShaderModule parse(const std::string filename);
+
     ShaderModule parse(const std::string filename, std::error_code& ec);
 
     std::vector<ShaderModule> modules;
+    std::vector<ShaderModule> sorted_modules;
     std::vector<std::string> include_dirs; //change type to fs::path?
     std::error_code last_ec;
 };
