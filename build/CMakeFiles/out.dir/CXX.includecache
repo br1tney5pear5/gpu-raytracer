@@ -6,13 +6,13 @@
 
 #IncludeRegexTransform: 
 
-/shared/projects/raytracer/Logger.h
+/shared/projects/raytracer/src/Logger.h
 iostream
 -
 signal.h
 -
 
-/shared/projects/raytracer/Shader.h
+/shared/projects/raytracer/src/Shader.h
 vector
 -
 variant
@@ -28,8 +28,30 @@ iostream
 GL/glew.h
 -
 
-/shared/projects/raytracer/main.cpp
+/shared/projects/raytracer/src/main.cpp
 chrono
+-
+regex
+-
+tuple
+-
+iostream
+-
+fstream
+-
+sstream
+-
+vector
+-
+optional
+-
+unordered_map
+-
+map
+-
+tgmath.h
+-
+filesystem
 -
 GL/glew.h
 -
@@ -40,9 +62,9 @@ glm/glm.hpp
 glm/gtc/type_ptr.hpp
 -
 Shader.h
-/shared/projects/raytracer/Shader.h
+/shared/projects/raytracer/src/Shader.h
 Logger.h
-/shared/projects/raytracer/Logger.h
+/shared/projects/raytracer/src/Logger.h
 stdint.h
 -
 stdlib.h

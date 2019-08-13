@@ -70,17 +70,62 @@ CMakeFiles/local.dir/Shader.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/local.dir/Shader.cpp.s"
 	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /shared/projects/raytracer/Shader.cpp -o CMakeFiles/local.dir/Shader.cpp.s
 
+CMakeFiles/local.dir/Ray.cpp.o: CMakeFiles/local.dir/flags.make
+CMakeFiles/local.dir/Ray.cpp.o: ../Ray.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/shared/projects/raytracer/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/local.dir/Ray.cpp.o"
+	/usr/bin/clang++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/local.dir/Ray.cpp.o -c /shared/projects/raytracer/Ray.cpp
+
+CMakeFiles/local.dir/Ray.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/local.dir/Ray.cpp.i"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /shared/projects/raytracer/Ray.cpp > CMakeFiles/local.dir/Ray.cpp.i
+
+CMakeFiles/local.dir/Ray.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/local.dir/Ray.cpp.s"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /shared/projects/raytracer/Ray.cpp -o CMakeFiles/local.dir/Ray.cpp.s
+
+CMakeFiles/local.dir/Sphere.cpp.o: CMakeFiles/local.dir/flags.make
+CMakeFiles/local.dir/Sphere.cpp.o: ../Sphere.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/shared/projects/raytracer/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/local.dir/Sphere.cpp.o"
+	/usr/bin/clang++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/local.dir/Sphere.cpp.o -c /shared/projects/raytracer/Sphere.cpp
+
+CMakeFiles/local.dir/Sphere.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/local.dir/Sphere.cpp.i"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /shared/projects/raytracer/Sphere.cpp > CMakeFiles/local.dir/Sphere.cpp.i
+
+CMakeFiles/local.dir/Sphere.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/local.dir/Sphere.cpp.s"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /shared/projects/raytracer/Sphere.cpp -o CMakeFiles/local.dir/Sphere.cpp.s
+
+CMakeFiles/local.dir/Hitable.cpp.o: CMakeFiles/local.dir/flags.make
+CMakeFiles/local.dir/Hitable.cpp.o: ../Hitable.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/shared/projects/raytracer/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/local.dir/Hitable.cpp.o"
+	/usr/bin/clang++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/local.dir/Hitable.cpp.o -c /shared/projects/raytracer/Hitable.cpp
+
+CMakeFiles/local.dir/Hitable.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/local.dir/Hitable.cpp.i"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /shared/projects/raytracer/Hitable.cpp > CMakeFiles/local.dir/Hitable.cpp.i
+
+CMakeFiles/local.dir/Hitable.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/local.dir/Hitable.cpp.s"
+	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /shared/projects/raytracer/Hitable.cpp -o CMakeFiles/local.dir/Hitable.cpp.s
+
 # Object files for target local
 local_OBJECTS = \
-"CMakeFiles/local.dir/Shader.cpp.o"
+"CMakeFiles/local.dir/Shader.cpp.o" \
+"CMakeFiles/local.dir/Ray.cpp.o" \
+"CMakeFiles/local.dir/Sphere.cpp.o" \
+"CMakeFiles/local.dir/Hitable.cpp.o"
 
 # External object files for target local
 local_EXTERNAL_OBJECTS =
 
 liblocal.a: CMakeFiles/local.dir/Shader.cpp.o
+liblocal.a: CMakeFiles/local.dir/Ray.cpp.o
+liblocal.a: CMakeFiles/local.dir/Sphere.cpp.o
+liblocal.a: CMakeFiles/local.dir/Hitable.cpp.o
 liblocal.a: CMakeFiles/local.dir/build.make
 liblocal.a: CMakeFiles/local.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/shared/projects/raytracer/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX static library liblocal.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/shared/projects/raytracer/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX static library liblocal.a"
 	$(CMAKE_COMMAND) -P CMakeFiles/local.dir/cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/local.dir/link.txt --verbose=$(VERBOSE)
 

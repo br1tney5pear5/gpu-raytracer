@@ -111,19 +111,6 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named local
-
-# Build rule for target.
-local: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 local
-.PHONY : local
-
-# fast build rule for target.
-local/fast:
-	$(MAKE) -f CMakeFiles/local.dir/build.make CMakeFiles/local.dir/build
-.PHONY : local/fast
-
-#=============================================================================
 # Target rules for targets named out
 
 # Build rule for target.
@@ -136,59 +123,192 @@ out/fast:
 	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/build
 .PHONY : out/fast
 
-Shader.o: Shader.cpp.o
+#=============================================================================
+# Target rules for targets named test
 
-.PHONY : Shader.o
+# Build rule for target.
+test: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test
+.PHONY : test
 
-# target to build an object file
-Shader.cpp.o:
-	$(MAKE) -f CMakeFiles/local.dir/build.make CMakeFiles/local.dir/Shader.cpp.o
-.PHONY : Shader.cpp.o
+# fast build rule for target.
+test/fast:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
+.PHONY : test/fast
 
-Shader.i: Shader.cpp.i
+src/Hitable.o: src/Hitable.cpp.o
 
-.PHONY : Shader.i
-
-# target to preprocess a source file
-Shader.cpp.i:
-	$(MAKE) -f CMakeFiles/local.dir/build.make CMakeFiles/local.dir/Shader.cpp.i
-.PHONY : Shader.cpp.i
-
-Shader.s: Shader.cpp.s
-
-.PHONY : Shader.s
-
-# target to generate assembly for a file
-Shader.cpp.s:
-	$(MAKE) -f CMakeFiles/local.dir/build.make CMakeFiles/local.dir/Shader.cpp.s
-.PHONY : Shader.cpp.s
-
-main.o: main.cpp.o
-
-.PHONY : main.o
+.PHONY : src/Hitable.o
 
 # target to build an object file
-main.cpp.o:
-	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/main.cpp.o
-.PHONY : main.cpp.o
+src/Hitable.cpp.o:
+	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/Hitable.cpp.o
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Hitable.cpp.o
+.PHONY : src/Hitable.cpp.o
 
-main.i: main.cpp.i
+src/Hitable.i: src/Hitable.cpp.i
 
-.PHONY : main.i
+.PHONY : src/Hitable.i
 
 # target to preprocess a source file
-main.cpp.i:
-	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/main.cpp.i
-.PHONY : main.cpp.i
+src/Hitable.cpp.i:
+	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/Hitable.cpp.i
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Hitable.cpp.i
+.PHONY : src/Hitable.cpp.i
 
-main.s: main.cpp.s
+src/Hitable.s: src/Hitable.cpp.s
 
-.PHONY : main.s
+.PHONY : src/Hitable.s
 
 # target to generate assembly for a file
-main.cpp.s:
-	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/main.cpp.s
-.PHONY : main.cpp.s
+src/Hitable.cpp.s:
+	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/Hitable.cpp.s
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Hitable.cpp.s
+.PHONY : src/Hitable.cpp.s
+
+src/Ray.o: src/Ray.cpp.o
+
+.PHONY : src/Ray.o
+
+# target to build an object file
+src/Ray.cpp.o:
+	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/Ray.cpp.o
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Ray.cpp.o
+.PHONY : src/Ray.cpp.o
+
+src/Ray.i: src/Ray.cpp.i
+
+.PHONY : src/Ray.i
+
+# target to preprocess a source file
+src/Ray.cpp.i:
+	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/Ray.cpp.i
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Ray.cpp.i
+.PHONY : src/Ray.cpp.i
+
+src/Ray.s: src/Ray.cpp.s
+
+.PHONY : src/Ray.s
+
+# target to generate assembly for a file
+src/Ray.cpp.s:
+	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/Ray.cpp.s
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Ray.cpp.s
+.PHONY : src/Ray.cpp.s
+
+src/Shader.o: src/Shader.cpp.o
+
+.PHONY : src/Shader.o
+
+# target to build an object file
+src/Shader.cpp.o:
+	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/Shader.cpp.o
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Shader.cpp.o
+.PHONY : src/Shader.cpp.o
+
+src/Shader.i: src/Shader.cpp.i
+
+.PHONY : src/Shader.i
+
+# target to preprocess a source file
+src/Shader.cpp.i:
+	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/Shader.cpp.i
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Shader.cpp.i
+.PHONY : src/Shader.cpp.i
+
+src/Shader.s: src/Shader.cpp.s
+
+.PHONY : src/Shader.s
+
+# target to generate assembly for a file
+src/Shader.cpp.s:
+	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/Shader.cpp.s
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Shader.cpp.s
+.PHONY : src/Shader.cpp.s
+
+src/Sphere.o: src/Sphere.cpp.o
+
+.PHONY : src/Sphere.o
+
+# target to build an object file
+src/Sphere.cpp.o:
+	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/Sphere.cpp.o
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Sphere.cpp.o
+.PHONY : src/Sphere.cpp.o
+
+src/Sphere.i: src/Sphere.cpp.i
+
+.PHONY : src/Sphere.i
+
+# target to preprocess a source file
+src/Sphere.cpp.i:
+	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/Sphere.cpp.i
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Sphere.cpp.i
+.PHONY : src/Sphere.cpp.i
+
+src/Sphere.s: src/Sphere.cpp.s
+
+.PHONY : src/Sphere.s
+
+# target to generate assembly for a file
+src/Sphere.cpp.s:
+	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/Sphere.cpp.s
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Sphere.cpp.s
+.PHONY : src/Sphere.cpp.s
+
+src/main.o: src/main.cpp.o
+
+.PHONY : src/main.o
+
+# target to build an object file
+src/main.cpp.o:
+	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/main.cpp.o
+.PHONY : src/main.cpp.o
+
+src/main.i: src/main.cpp.i
+
+.PHONY : src/main.i
+
+# target to preprocess a source file
+src/main.cpp.i:
+	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/main.cpp.i
+.PHONY : src/main.cpp.i
+
+src/main.s: src/main.cpp.s
+
+.PHONY : src/main.s
+
+# target to generate assembly for a file
+src/main.cpp.s:
+	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/main.cpp.s
+.PHONY : src/main.cpp.s
+
+test/test.o: test/test.cpp.o
+
+.PHONY : test/test.o
+
+# target to build an object file
+test/test.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/test/test.cpp.o
+.PHONY : test/test.cpp.o
+
+test/test.i: test/test.cpp.i
+
+.PHONY : test/test.i
+
+# target to preprocess a source file
+test/test.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/test/test.cpp.i
+.PHONY : test/test.cpp.i
+
+test/test.s: test/test.cpp.s
+
+.PHONY : test/test.s
+
+# target to generate assembly for a file
+test/test.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/test/test.cpp.s
+.PHONY : test/test.cpp.s
 
 # Help Target
 help:
@@ -198,14 +318,26 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... local"
 	@echo "... out"
-	@echo "... Shader.o"
-	@echo "... Shader.i"
-	@echo "... Shader.s"
-	@echo "... main.o"
-	@echo "... main.i"
-	@echo "... main.s"
+	@echo "... test"
+	@echo "... src/Hitable.o"
+	@echo "... src/Hitable.i"
+	@echo "... src/Hitable.s"
+	@echo "... src/Ray.o"
+	@echo "... src/Ray.i"
+	@echo "... src/Ray.s"
+	@echo "... src/Shader.o"
+	@echo "... src/Shader.i"
+	@echo "... src/Shader.s"
+	@echo "... src/Sphere.o"
+	@echo "... src/Sphere.i"
+	@echo "... src/Sphere.s"
+	@echo "... src/main.o"
+	@echo "... src/main.i"
+	@echo "... src/main.s"
+	@echo "... test/test.o"
+	@echo "... test/test.i"
+	@echo "... test/test.s"
 .PHONY : help
 
 

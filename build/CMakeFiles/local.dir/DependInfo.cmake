@@ -4,7 +4,10 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
+  "/shared/projects/raytracer/Hitable.cpp" "/shared/projects/raytracer/build/CMakeFiles/local.dir/Hitable.cpp.o"
+  "/shared/projects/raytracer/Ray.cpp" "/shared/projects/raytracer/build/CMakeFiles/local.dir/Ray.cpp.o"
   "/shared/projects/raytracer/Shader.cpp" "/shared/projects/raytracer/build/CMakeFiles/local.dir/Shader.cpp.o"
+  "/shared/projects/raytracer/Sphere.cpp" "/shared/projects/raytracer/build/CMakeFiles/local.dir/Sphere.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "Clang")
 

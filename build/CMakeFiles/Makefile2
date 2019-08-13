@@ -65,50 +65,13 @@ CMAKE_SOURCE_DIR = /shared/projects/raytracer
 CMAKE_BINARY_DIR = /shared/projects/raytracer/build
 
 #=============================================================================
-# Target rules for target CMakeFiles/local.dir
-
-# All Build rule for target.
-CMakeFiles/local.dir/all:
-	$(MAKE) -f CMakeFiles/local.dir/build.make CMakeFiles/local.dir/depend
-	$(MAKE) -f CMakeFiles/local.dir/build.make CMakeFiles/local.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/shared/projects/raytracer/build/CMakeFiles --progress-num=1,2 "Built target local"
-.PHONY : CMakeFiles/local.dir/all
-
-# Include target in all.
-all: CMakeFiles/local.dir/all
-
-.PHONY : all
-
-# Build rule for subdir invocation for target.
-CMakeFiles/local.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /shared/projects/raytracer/build/CMakeFiles 2
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/local.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /shared/projects/raytracer/build/CMakeFiles 0
-.PHONY : CMakeFiles/local.dir/rule
-
-# Convenience name for target.
-local: CMakeFiles/local.dir/rule
-
-.PHONY : local
-
-# clean rule for target.
-CMakeFiles/local.dir/clean:
-	$(MAKE) -f CMakeFiles/local.dir/build.make CMakeFiles/local.dir/clean
-.PHONY : CMakeFiles/local.dir/clean
-
-# clean rule for target.
-clean: CMakeFiles/local.dir/clean
-
-.PHONY : clean
-
-#=============================================================================
 # Target rules for target CMakeFiles/out.dir
 
 # All Build rule for target.
-CMakeFiles/out.dir/all: CMakeFiles/local.dir/all
+CMakeFiles/out.dir/all:
 	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/depend
 	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/shared/projects/raytracer/build/CMakeFiles --progress-num=3,4 "Built target out"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/shared/projects/raytracer/build/CMakeFiles --progress-num=1,2,3,4,5,6 "Built target out"
 .PHONY : CMakeFiles/out.dir/all
 
 # Include target in all.
@@ -118,7 +81,7 @@ all: CMakeFiles/out.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/out.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /shared/projects/raytracer/build/CMakeFiles 4
+	$(CMAKE_COMMAND) -E cmake_progress_start /shared/projects/raytracer/build/CMakeFiles 6
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/out.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /shared/projects/raytracer/build/CMakeFiles 0
 .PHONY : CMakeFiles/out.dir/rule
@@ -135,6 +98,43 @@ CMakeFiles/out.dir/clean:
 
 # clean rule for target.
 clean: CMakeFiles/out.dir/clean
+
+.PHONY : clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/test.dir
+
+# All Build rule for target.
+CMakeFiles/test.dir/all:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/depend
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/shared/projects/raytracer/build/CMakeFiles --progress-num=7,8,9,10,11,12 "Built target test"
+.PHONY : CMakeFiles/test.dir/all
+
+# Include target in all.
+all: CMakeFiles/test.dir/all
+
+.PHONY : all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/test.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /shared/projects/raytracer/build/CMakeFiles 6
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/test.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /shared/projects/raytracer/build/CMakeFiles 0
+.PHONY : CMakeFiles/test.dir/rule
+
+# Convenience name for target.
+test: CMakeFiles/test.dir/rule
+
+.PHONY : test
+
+# clean rule for target.
+CMakeFiles/test.dir/clean:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/clean
+.PHONY : CMakeFiles/test.dir/clean
+
+# clean rule for target.
+clean: CMakeFiles/test.dir/clean
 
 .PHONY : clean
 
