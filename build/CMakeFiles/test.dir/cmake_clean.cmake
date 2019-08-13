@@ -3,6 +3,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/test.dir/src/Hitable.cpp.o"
   "CMakeFiles/test.dir/src/Ray.cpp.o"
   "CMakeFiles/test.dir/src/Shader.cpp.o"
+  "CMakeFiles/test.dir/src/ShaderBuilder.cpp.o"
   "CMakeFiles/test.dir/src/Sphere.cpp.o"
   "../bin/test.pdb"
   "../bin/test"

@@ -12,6 +12,10 @@ CMakeFiles/out.dir/src/Shader.cpp.o: ../src/Logger.h
 CMakeFiles/out.dir/src/Shader.cpp.o: ../src/Shader.cpp
 CMakeFiles/out.dir/src/Shader.cpp.o: ../src/Shader.h
 
+CMakeFiles/out.dir/src/ShaderBuilder.cpp.o: ../src/Logger.h
+CMakeFiles/out.dir/src/ShaderBuilder.cpp.o: ../src/ShaderBuilder.cpp
+CMakeFiles/out.dir/src/ShaderBuilder.cpp.o: ../src/ShaderBuilder.h
+
 CMakeFiles/out.dir/src/Sphere.cpp.o: ../src/Hitable.h
 CMakeFiles/out.dir/src/Sphere.cpp.o: ../src/Ray.h
 CMakeFiles/out.dir/src/Sphere.cpp.o: ../src/Sphere.cpp
@@ -19,5 +23,6 @@ CMakeFiles/out.dir/src/Sphere.cpp.o: ../src/Sphere.h
 
 CMakeFiles/out.dir/src/main.cpp.o: ../src/Logger.h
 CMakeFiles/out.dir/src/main.cpp.o: ../src/Shader.h
+CMakeFiles/out.dir/src/main.cpp.o: ../src/ShaderBuilder.h
 CMakeFiles/out.dir/src/main.cpp.o: ../src/main.cpp
 

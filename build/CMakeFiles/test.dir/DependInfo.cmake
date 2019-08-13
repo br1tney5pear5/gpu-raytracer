@@ -7,6 +7,7 @@ set(CMAKE_DEPENDS_CHECK_CXX
   "/shared/projects/raytracer/src/Hitable.cpp" "/shared/projects/raytracer/build/CMakeFiles/test.dir/src/Hitable.cpp.o"
   "/shared/projects/raytracer/src/Ray.cpp" "/shared/projects/raytracer/build/CMakeFiles/test.dir/src/Ray.cpp.o"
   "/shared/projects/raytracer/src/Shader.cpp" "/shared/projects/raytracer/build/CMakeFiles/test.dir/src/Shader.cpp.o"
+  "/shared/projects/raytracer/src/ShaderBuilder.cpp" "/shared/projects/raytracer/build/CMakeFiles/test.dir/src/ShaderBuilder.cpp.o"
   "/shared/projects/raytracer/src/Sphere.cpp" "/shared/projects/raytracer/build/CMakeFiles/test.dir/src/Sphere.cpp.o"
   "/shared/projects/raytracer/test/test.cpp" "/shared/projects/raytracer/build/CMakeFiles/test.dir/test/test.cpp.o"
   )

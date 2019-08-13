@@ -28,6 +28,14 @@ iostream
 GL/glew.h
 -
 
+/shared/projects/raytracer/src/ShaderBuilder.h
+string
+-
+vector
+-
+system_error
+-
+
 /shared/projects/raytracer/src/main.cpp
 chrono
 -
@@ -65,6 +73,10 @@ Shader.h
 /shared/projects/raytracer/src/Shader.h
 Logger.h
 /shared/projects/raytracer/src/Logger.h
+Logger.h
+/shared/projects/raytracer/src/Logger.h
+ShaderBuilder.h
+/shared/projects/raytracer/src/ShaderBuilder.h
 stdint.h
 -
 stdlib.h

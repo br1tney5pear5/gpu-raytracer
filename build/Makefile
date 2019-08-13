@@ -226,6 +226,36 @@ src/Shader.cpp.s:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Shader.cpp.s
 .PHONY : src/Shader.cpp.s
 
+src/ShaderBuilder.o: src/ShaderBuilder.cpp.o
+
+.PHONY : src/ShaderBuilder.o
+
+# target to build an object file
+src/ShaderBuilder.cpp.o:
+	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/ShaderBuilder.cpp.o
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/ShaderBuilder.cpp.o
+.PHONY : src/ShaderBuilder.cpp.o
+
+src/ShaderBuilder.i: src/ShaderBuilder.cpp.i
+
+.PHONY : src/ShaderBuilder.i
+
+# target to preprocess a source file
+src/ShaderBuilder.cpp.i:
+	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/ShaderBuilder.cpp.i
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/ShaderBuilder.cpp.i
+.PHONY : src/ShaderBuilder.cpp.i
+
+src/ShaderBuilder.s: src/ShaderBuilder.cpp.s
+
+.PHONY : src/ShaderBuilder.s
+
+# target to generate assembly for a file
+src/ShaderBuilder.cpp.s:
+	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/ShaderBuilder.cpp.s
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/ShaderBuilder.cpp.s
+.PHONY : src/ShaderBuilder.cpp.s
+
 src/Sphere.o: src/Sphere.cpp.o
 
 .PHONY : src/Sphere.o
@@ -329,6 +359,9 @@ help:
 	@echo "... src/Shader.o"
 	@echo "... src/Shader.i"
 	@echo "... src/Shader.s"
+	@echo "... src/ShaderBuilder.o"
+	@echo "... src/ShaderBuilder.i"
+	@echo "... src/ShaderBuilder.s"
 	@echo "... src/Sphere.o"
 	@echo "... src/Sphere.i"
 	@echo "... src/Sphere.s"
