@@ -1,6 +1,7 @@
 __module "constants"
 
 #define PI 3.1415926535897932384626433832795
+#define EPS 0.00001
 
 #define WORLD_REFRACTIVE_INDEX 1.0
 
@@ -18,6 +19,7 @@ __module "constants"
 #define PLANE_HIT 1
 #define SKYBOX_HIT 2
 
-#define RAYS_PER_PIXEL 1
-#define MAX_RAY_STEPS 10
+#define RAYS_PER_FRAGMENT 3
+#define MAX_RAY_STEPS 7
+#define MAX_RAY_LENGTH 1000.0
 

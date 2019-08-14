@@ -7,3 +7,6 @@ random.glsl
 unifroms.glsl
 colors.glsl
 util.glsl
+scene.glsl
+intersect.glsl
+rays_util.glsl

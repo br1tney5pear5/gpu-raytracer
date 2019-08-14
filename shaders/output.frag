@@ -3,26 +3,41 @@
 #endif
 
 //=============================== types
+struct PointLight{
+    vec3 position;
+    vec3 emission;
+};
+struct DirectionalLight{
+    vec3 direction;
+    vec3 emission;
+};
 struct Material{
+    vec3 albedo;
     float roughness;
 };
+
 struct Ray{
     vec3 origin;
     vec3 direction;
 };
+
 struct Hit{
     float t;
     vec3 point;
     vec3 normal;
     int material;
+    int type;
 };
 struct Sphere{
     vec3 position;
     float radius;
+    int material;
 };
 struct Plane{
+    vec3 position;
     vec3 normal;
     float size;
+    int material;
 };
 struct Camera{
     vec3 position;
@@ -32,6 +47,7 @@ struct Camera{
 
 //=============================== constants
 #define PI 3.1415926535897932384626433832795
+#define EPS 0.00001
 
 #define WORLD_REFRACTIVE_INDEX 1.0
 
@@ -49,8 +65,9 @@ struct Camera{
 #define PLANE_HIT 1
 #define SKYBOX_HIT 2
 
-#define RAYS_PER_PIXEL 1
-#define MAX_RAY_STEPS 10
+#define RAYS_PER_FRAGMENT 3
+#define MAX_RAY_STEPS 7
+#define MAX_RAY_LENGTH 1000.0
 
 
 //=============================== quaternion
@@ -88,7 +105,7 @@ varying vec4 v_position;
 // p - pseudo (pseudo random number generator)
 // u - unit (unit vector)
 // bi - bipolar (between -1 and 1)
-// t - time based
+// t - time based (depends on u_time uniform)
 
 #define _RTABLE_SZ 30
 float _rtable[_RTABLE_SZ] = float[](
@@ -110,19 +127,40 @@ float prand(vec2 seed, float t) {
     return fract(sin(dot(seed.xy, vec2(12.9898,78.233))
                      ) * 43758.5453123 * x);
 }
-float prand(vec2 seed, int n) { return prand(seed,_rtable[n %_RTABLE_SZ]); }
-float prand(vec2 seed) { return prand(seed,0.0); }
 
-float trand(vec2 seed, int n) { return prand(seed,_rtable[n %_RTABLE_SZ] + u_time); }
-float trand(vec2 seed) { return prand(seed,u_time); }
+float prand(vec2 seed, int n) {
+    return prand(seed,_rtable[n %_RTABLE_SZ]); }
+float prand(vec2 seed) {
+    return prand(seed,0.0); }
 
-float biprand(vec2 seed){
-    return prand(seed) * 2.0 - 1.0;
-}
+float trand(vec2 seed, int n) {
+    return prand(seed,_rtable[n %_RTABLE_SZ] + u_time); }
+float trand(vec2 seed) {
+    return prand(seed,u_time); }
 
-// vec3 rand_uvec3(vec2 seed){
-//     return vec3(rand(seed));
-// }
+float biprand(vec2 seed, int n) {
+    return prand(seed,_rtable[n %_RTABLE_SZ]) * 2.0 - 1.0; }
+float biprand(vec2 seed) {
+    return prand(seed,0.0) * 2.0 - 1.0; }
+
+float bitrand(vec2 seed, int n) {
+    return prand(seed,_rtable[n %_RTABLE_SZ] + u_time) * 2.0 - 1.0; }
+float bitrand(vec2 seed) {
+    return prand(seed,u_time) * 2.0 - 1.0; }
+
+
+vec3 trand_uvec3(vec2 seed){
+    return vec3(bitrand(seed,2), bitrand(seed,9), bitrand(seed,7));}
+
+vec3 trand_uvec3(vec2 seed, int n){
+    return vec3(bitrand(seed,2 + n), bitrand(seed,9 + n), bitrand(seed,7 + n));}
+
+
+vec3 prand_uvec3(vec2 seed){
+    return vec3(biprand(seed,2), biprand(seed,9), biprand(seed,7));}
+
+vec3 prand_uvec3(vec2 seed, int n){
+    return vec3(biprand(seed,2 + n), biprand(seed,9 + n), biprand(seed,7 + n));}
 
 // NOTE: This function gives really nice patters, do not delete!
 // float _nicerand_counter = 0.0;
@@ -136,6 +174,8 @@ float biprand(vec2 seed){
 //=============================== math
 // reimplement with quaternions, there should be faster solution
 mat3 vec_to_vec_map(vec3 a, vec3 b) {
+    if(a == b) return mat3(1.0);
+    if(a == -b) return mat3(1.0);
     vec3 v =  cross(a,b);
     float sine = length(v);
     float cosine = dot(a,b);
@@ -308,31 +348,190 @@ vec3 split(vec3 a, vec3 b) {
     return split(a,b,true);
 }
 
+//=============================== scene
+#define DIRECTIONAL_LIGHTS_COUNT 1
+DirectionalLight directional_lights[DIRECTIONAL_LIGHTS_COUNT] = 
+    DirectionalLight[](DirectionalLight(vec3(1.0,-1.0,0.0), vec3(0.2,0.2,0.2)));
+
+#define POINT_LIGHTS_COUNT 1
+PointLight point_lights[POINT_LIGHTS_COUNT] = 
+    PointLight[](PointLight(vec3(0.0,4.0,4.0), vec3(0.2,0.2,0.2)));
+
+#define MATERIALS_COUNT 3
+Material materials[MATERIALS_COUNT] =
+    Material[](Material(vec3(0.7,0.5,0.3), 0.2),
+               Material(vec3(0.5,0.5,0.7), 0.0),
+               Material(vec3(0.5,0.5,0.5), 0.01)
+               );
+#define LAMBERTIAN 0
+#define METAL 1
+
+#define SPHERES_COUNT 7
+Sphere spheres[SPHERES_COUNT] =
+    Sphere[](Sphere(vec3(-2.0, 0.0, 0.0), 1.0, 0),
+             Sphere(vec3(-3.0, 0.0, 0.0), 1.0, 1),
+             Sphere(vec3( 2.0, 5.0, 0.0), 0.8, 0),
+             Sphere(vec3( 3.0, 0.0, 2.0), 2.0, 2),
+             Sphere(vec3(-3.0, 3.0,-1.0), 1.0, 2),
+             Sphere(vec3( 2.0, 3.0,-0.6), 1.0, 1),
+             Sphere(vec3( 0.0,-101.0, 0.0), 100.0, 0)
+             );
+
+#define PLANES_COUNT 2
+Plane planes[PLANES_COUNT] =
+    Plane[](Plane(vec3(-2.0, 2.0, 0.0), UP, 4.0, 0),
+            Plane(vec3(-3.0,-2.0, 0.0), UP, 4.0, 1));
+
+//=============================== rays_util
+vec3 reflect(vec3 n, vec3 v) {
+    return v - 2.0 * dot(n,v) * n;
+}
+
+vec3 refract(vec3 n, vec3 v, float eta) {
+    float cos_in = dot(v,n);
+    float r = 1.5;
+    // if(cos_in < 0.0) {
+    //     r = WORLD_REFRACTIVE_INDEX/eta;
+    // } else {
+    //     r = eta/WORLD_REFRACTIVE_INDEX;
+    // }
+
+
+    float discriminant = 1.0 - (1.0 - cos_in) * r * r;
+    if(discriminant > 0.0){
+        return r * (v + n * cos_in) - n * sqrt(discriminant);
+    }
+    return n;
+}
+
+
+//=============================== intersect
+Hit intersect(Ray ray) {
+    Hit hit;
+    int index;
+    float t = MAX_RAY_LENGTH;
+
+    for(int i=0; i < SPHERES_COUNT; i++) { // 2 cancels
+        vec3 origin_diff = ray.origin - spheres[i].position;
+        float a = dot(ray.direction, ray.direction);
+        float b = dot(origin_diff, ray.direction);
+        float c = dot(origin_diff, origin_diff) - pow(spheres[i].radius, 2.0);
+        float delta = b*b - a * c;
+        if(delta > 0.0) {
+            float sqrt_delta = sqrt(delta); // reuse c
+            float t1 = (-b + sqrt_delta) / a;
+            float t2 = (-b - sqrt_delta) / a;
+
+            if(t1 < 0.0) t1 = MAX_RAY_LENGTH;
+            if(t2 < 0.0) t2 = MAX_RAY_LENGTH;
+
+            float temp_t = min(t1, t2); //reuse t1
+
+            if(temp_t < t) {
+                t = temp_t;
+                index = i;
+            }
+        }
+    }
+    if(t != MAX_RAY_LENGTH) {
+        hit.t = t;
+        hit.point = ray.origin + ray.direction * t;
+        hit.normal = normalize(hit.point - spheres[index].position);
+        hit.point += hit.normal * EPS;
+        hit.material = spheres[index].material;
+        hit.type = SPHERE_HIT;
+    }
+
+    for(int i=0; i < PLANES_COUNT; i++) { // 2 cancels
+
+    }
+
+    if(t == MAX_RAY_LENGTH) {
+        hit.t = -1.0;
+        hit.type = SKYBOX_HIT;
+    }
+    return hit;
+
+}
+
 //=============================== mainfrag
-Ray rays_history[MAX_RAY_STEPS];
-Hit hits_history[MAX_RAY_STEPS];
+Ray rays[MAX_RAY_STEPS + 1];
+Hit hits[MAX_RAY_STEPS + 1];
 
 Camera camera;
 Ray cam_ray;
 
 void main() {
-    camera.position = vec3(0.0,0.0,-2.0);
-    camera.direction = FORWARD;
+    spheres[0].position.x = sin(u_time) * 4.0;
+    spheres[0].position.y = cos(u_time) * 4.0;
+
+    spheres[1].position.z = 1.0 + sin(u_time);
+    camera.position = vec3(0.0,1.0,-5.0);
+    camera.direction = vec3(0.0,0.0,0.0);
+
+    //LAMP
+    
+    point_lights[0].position.z =cos(u_time);
 
     cam_ray.origin = camera.position;
-    cam_ray.direction =
-        vec_to_vec_map(FORWARD, camera.direction) * (FORWARD + v_position.xyz);
-
-    Hit hit;
 
 
+    vec3 campos = vec3(v_position.xy,0.0);
 
-    vec3 out_col;
-    out_col = vec3(v_position.xyz);
-    float l = (v_position.y + 1.0) * 0.5;
-    out_col = split((1.0 - l) * SALMON + l * STEEL_BLUE,
-                    SALMON,
-                    false);
+    cam_ray.direction = //TODO: change to quaternions
+        // vec_to_vec_map(FORWARD, camera.direction) *
+        (v_position.xyz + FORWARD);
+
+    vec3 out_col = vec3(0.0);
+    for(int rpp = 0; rpp < RAYS_PER_FRAGMENT; rpp++) {
+      vec3 color = vec3(0.0);
+      campos += prand_uvec3(campos.xy,rpp)*0.01;
+
+
+      cam_ray.direction = (v_position.xyz + FORWARD);
+      rays[0] = cam_ray;
+      int r = 0;
+      for(r = 0; r < MAX_RAY_STEPS; r++) {
+          hits[r] = intersect(rays[r]);
+          Material mat = materials[hits[r].material];
+
+          if(hits[r].t > 0.0) {
+              vec3 ref =
+                  normalize(reflect(hits[r].normal, rays[r].direction) +
+                            prand_uvec3(campos.xy,r) * mat.roughness);
+              if(dot(ref, hits[r].normal) < EPS) {ref = -ref;}
+
+              rays[r + 1] = Ray(hits[r].point, ref);
+          } else break;
+      }
+      for(int i=r; i >= 0; i--) {
+          if(hits[i].type == SKYBOX_HIT) {
+              float l = (v_position.y + 1.0) * 0.5;
+              color += (1.0 - l) * SALMON + l * STEEL_BLUE;
+              color *= 0.8;
+          } else {
+
+              Hit lightprobe;
+              for(int pl = 0; pl < POINT_LIGHTS_COUNT; pl++){
+                  lightprobe =
+                      intersect(Ray(hits[i].point,
+                                    point_lights[0].position - hits[i].point
+                                    ));
+                  if(lightprobe.t == -1.0) {color += point_lights[0].emission;}
+              }
+              Material mat = materials[hits[i].material];
+              vec3 emission = max(mat.albedo - vec3(1.0), vec3(0.0));
+              vec3 reflection = mat.albedo - emission;
+
+              color *= reflection;
+              color += emission;
+
+          }
+      }
+      out_col += color;
+    }
+    out_col /= float(RAYS_PER_FRAGMENT);
+    // out_col = sqrt(out_col);
 
     gl_FragColor = vec4(out_col, 1.0);
 }

@@ -5,7 +5,7 @@ __uses "uniforms" // needs u_time
 // p - pseudo (pseudo random number generator)
 // u - unit (unit vector)
 // bi - bipolar (between -1 and 1)
-// t - time based
+// t - time based (depends on u_time uniform)
 
 #define _RTABLE_SZ 30
 float _rtable[_RTABLE_SZ] = float[](
@@ -27,19 +27,40 @@ float prand(vec2 seed, float t) {
     return fract(sin(dot(seed.xy, vec2(12.9898,78.233))
                      ) * 43758.5453123 * x);
 }
-float prand(vec2 seed, int n) { return prand(seed,_rtable[n %_RTABLE_SZ]); }
-float prand(vec2 seed) { return prand(seed,0.0); }
 
-float trand(vec2 seed, int n) { return prand(seed,_rtable[n %_RTABLE_SZ] + u_time); }
-float trand(vec2 seed) { return prand(seed,u_time); }
+float prand(vec2 seed, int n) {
+    return prand(seed,_rtable[n %_RTABLE_SZ]); }
+float prand(vec2 seed) {
+    return prand(seed,0.0); }
 
-float biprand(vec2 seed){
-    return prand(seed) * 2.0 - 1.0;
-}
+float trand(vec2 seed, int n) {
+    return prand(seed,_rtable[n %_RTABLE_SZ] + u_time); }
+float trand(vec2 seed) {
+    return prand(seed,u_time); }
 
-// vec3 rand_uvec3(vec2 seed){
-//     return vec3(rand(seed));
-// }
+float biprand(vec2 seed, int n) {
+    return prand(seed,_rtable[n %_RTABLE_SZ]) * 2.0 - 1.0; }
+float biprand(vec2 seed) {
+    return prand(seed,0.0) * 2.0 - 1.0; }
+
+float bitrand(vec2 seed, int n) {
+    return prand(seed,_rtable[n %_RTABLE_SZ] + u_time) * 2.0 - 1.0; }
+float bitrand(vec2 seed) {
+    return prand(seed,u_time) * 2.0 - 1.0; }
+
+
+vec3 trand_uvec3(vec2 seed){
+    return vec3(bitrand(seed,2), bitrand(seed,9), bitrand(seed,7));}
+
+vec3 trand_uvec3(vec2 seed, int n){
+    return vec3(bitrand(seed,2 + n), bitrand(seed,9 + n), bitrand(seed,7 + n));}
+
+
+vec3 prand_uvec3(vec2 seed){
+    return vec3(biprand(seed,2), biprand(seed,9), biprand(seed,7));}
+
+vec3 prand_uvec3(vec2 seed, int n){
+    return vec3(biprand(seed,2 + n), biprand(seed,9 + n), biprand(seed,7 + n));}
 
 // NOTE: This function gives really nice patters, do not delete!
 // float _nicerand_counter = 0.0;
