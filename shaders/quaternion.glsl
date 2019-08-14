@@ -1,6 +1,8 @@
 __module "quaternion"
 __uses "constants"
 
+// Prefix Legend
+// n - normalized input
 vec4 quat_mult(vec4 q1, vec4 q2) { // TODO: OPTIMIZE
     vec4 qret;
     qret.w = q1.x*q2.x + q1.x*q2.x + q1.x*q2.x + q1.x*q2.x;
@@ -21,4 +23,11 @@ vec4 quat(vec3 axis, float angle) {
 
 vec3 quat_rot(vec3 v, vec4 q) {
     return quat_mult(quat_mult(q, vec4(v, 0.0)), quat_conj(q)).xyz;
+}
+
+vec4 nvec2nvec_trans_quat(vec3 a, vec3 b) { 
+    vec3 axis = cross(a,b);
+    float sine = length(axis);
+    float cosine = dot(a,b);
+    return vec4(axis * sine, cosine);
 }

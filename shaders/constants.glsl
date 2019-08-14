@@ -12,14 +12,18 @@ __module "constants"
 #define FORWARD   vec3( 0.0, 0.0, 1.0)
 #define BACKWARDS vec3( 0.0, 0.0,-1.0)
 
-#define MATERIAL1 0
+#define SKYBOX_MATERIAL 6
 #define MATERIAL2 1
 
 #define SPHERE_HIT 0
 #define PLANE_HIT 1
 #define SKYBOX_HIT 2
 
-#define RAYS_PER_FRAGMENT 3
-#define MAX_RAY_STEPS 7
+#define RAYS_PER_FRAGMENT 10
+#define MAX_RAY_STEPS 6
 #define MAX_RAY_LENGTH 1000.0
+#define LIGHT_PROBES 10
+
+// #define LIGHT
+#define LIGHTBLEED
 

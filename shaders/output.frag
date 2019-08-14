@@ -14,6 +14,8 @@ struct DirectionalLight{
 struct Material{
     vec3 albedo;
     float roughness;
+    float opacity;
+    float eta;
 };
 
 struct Ray{
@@ -58,19 +60,25 @@ struct Camera{
 #define FORWARD   vec3( 0.0, 0.0, 1.0)
 #define BACKWARDS vec3( 0.0, 0.0,-1.0)
 
-#define MATERIAL1 0
+#define SKYBOX_MATERIAL 6
 #define MATERIAL2 1
 
 #define SPHERE_HIT 0
 #define PLANE_HIT 1
 #define SKYBOX_HIT 2
 
-#define RAYS_PER_FRAGMENT 3
-#define MAX_RAY_STEPS 7
+#define RAYS_PER_FRAGMENT 10
+#define MAX_RAY_STEPS 6
 #define MAX_RAY_LENGTH 1000.0
+#define LIGHT_PROBES 10
+
+// #define LIGHT
+#define LIGHTBLEED
 
 
 //=============================== quaternion
+// Prefix Legend
+// n - normalized input
 vec4 quat_mult(vec4 q1, vec4 q2) { // TODO: OPTIMIZE
     vec4 qret;
     qret.w = q1.x*q2.x + q1.x*q2.x + q1.x*q2.x + q1.x*q2.x;
@@ -91,6 +99,13 @@ vec4 quat(vec3 axis, float angle) {
 
 vec3 quat_rot(vec3 v, vec4 q) {
     return quat_mult(quat_mult(q, vec4(v, 0.0)), quat_conj(q)).xyz;
+}
+
+vec4 nvec2nvec_trans_quat(vec3 a, vec3 b) { 
+    vec3 axis = cross(a,b);
+    float sine = length(axis);
+    float cosine = dot(a,b);
+    return vec4(axis * sine, cosine);
 }
 
 //=============================== uniforms
@@ -357,30 +372,37 @@ DirectionalLight directional_lights[DIRECTIONAL_LIGHTS_COUNT] =
 PointLight point_lights[POINT_LIGHTS_COUNT] = 
     PointLight[](PointLight(vec3(0.0,4.0,4.0), vec3(0.2,0.2,0.2)));
 
-#define MATERIALS_COUNT 3
+#define MATERIALS_COUNT 8
 Material materials[MATERIALS_COUNT] =
-    Material[](Material(vec3(0.7,0.5,0.3), 0.2),
-               Material(vec3(0.5,0.5,0.7), 0.0),
-               Material(vec3(0.5,0.5,0.5), 0.01)
+    Material[](Material(vec3(0.3,0.3,0.3), 0.7 , 0.9, 1.0), // 0.FLOOR
+               Material(vec3(0.9,0.9,0.9), 0.1 , 1.0, 1.0), // 1.METAL
+               Material(vec3(0.8,0.8,0.8), 0.0 , 0.0, 0.2), // 2.GLASS0
+               Material(vec3(3.6,3.6,3.5), 1.0 , 1.0, 1.0), // 3.LIGHT
+               Material(vec3(1.0,1.0,1.0), 1.1 , 1.5, 2.5), // 4.ROUGH METAL
+               Material(vec3(1.0,1.0,1.0), 0.2 , 0.7, 1.9), // 5.
+               Material(vec3(1.0,1.0,1.0), 0.1 , 1.0, WORLD_REFRACTIVE_INDEX),  // 6.SKYBOX
+               Material(vec3(1.0,1.0,1.0), 0.0 , 0.5, 2.5)  // 7.GLASS/METAL
                );
 #define LAMBERTIAN 0
 #define METAL 1
 
-#define SPHERES_COUNT 7
+#define SPHERES_COUNT 6
 Sphere spheres[SPHERES_COUNT] =
-    Sphere[](Sphere(vec3(-2.0, 0.0, 0.0), 1.0, 0),
-             Sphere(vec3(-3.0, 0.0, 0.0), 1.0, 1),
-             Sphere(vec3( 2.0, 5.0, 0.0), 0.8, 0),
-             Sphere(vec3( 3.0, 0.0, 2.0), 2.0, 2),
-             Sphere(vec3(-3.0, 3.0,-1.0), 1.0, 2),
-             Sphere(vec3( 2.0, 3.0,-0.6), 1.0, 1),
-             Sphere(vec3( 0.0,-101.0, 0.0), 100.0, 0)
+    Sphere[](Sphere(vec3( 3.0, -0.9,-0.9), 0.1, 7), //small right
+             Sphere(vec3(-2.7, 0.0,-1.0), 0.7, 0), // big right
+             Sphere(vec3(-0.2,-0.6,-2.0), 0.4, 5), // medium center
+             Sphere(vec3( 3.2, -0.2, 0.2), 0.8, 7),
+             Sphere(vec3(-1.0,-0.5,-1.0), 0.5, 1),
+             Sphere(vec3( 1.0, 0.0,-0.6), 1.0, 7)
              );
 
-#define PLANES_COUNT 2
+#define PLANES_COUNT 4
 Plane planes[PLANES_COUNT] =
-    Plane[](Plane(vec3(-2.0, 2.0, 0.0), UP, 4.0, 0),
-            Plane(vec3(-3.0,-2.0, 0.0), UP, 4.0, 1));
+    Plane[](Plane(vec3(0.0,-1.0, 0.0), vec3(0.0,1.0, 0.0), 7.0, 0),
+            Plane(vec3(0.0, 2.0, 3.0), vec3(0.0, 0.0, -1.0), 3.0, 3),
+            Plane(vec3(0.0, 2.0, 3.2), vec3(0.0, 0.0, -1.0), 4.0, 4),
+            Plane(vec3(0.0, 2.0, 2.9), vec3(0.0, 0.0, -1.0), 2.7, 4)
+            );
 
 //=============================== rays_util
 vec3 reflect(vec3 n, vec3 v) {
@@ -389,72 +411,100 @@ vec3 reflect(vec3 n, vec3 v) {
 
 vec3 refract(vec3 n, vec3 v, float eta) {
     float cos_in = dot(v,n);
-    float r = 1.5;
-    // if(cos_in < 0.0) {
-    //     r = WORLD_REFRACTIVE_INDEX/eta;
-    // } else {
-    //     r = eta/WORLD_REFRACTIVE_INDEX;
-    // }
 
-
-    float discriminant = 1.0 - (1.0 - cos_in) * r * r;
+    float discriminant = 1.0 - (1.0 - cos_in) * eta * eta;
     if(discriminant > 0.0){
-        return r * (v + n * cos_in) - n * sqrt(discriminant);
+        return eta * (v + n * cos_in) - n * sqrt(discriminant);
     }
     return n;
 }
 
 
 //=============================== intersect
-Hit intersect(Ray ray) {
+Hit intersect(Ray ray, bool lightprobe) {
     Hit hit;
-    int index;
+    int index = -1;
     float t = MAX_RAY_LENGTH;
+    float temp_t;
 
+    float a,b,c,delta;
+    float thres = EPS;
     for(int i=0; i < SPHERES_COUNT; i++) { // 2 cancels
         vec3 origin_diff = ray.origin - spheres[i].position;
-        float a = dot(ray.direction, ray.direction);
-        float b = dot(origin_diff, ray.direction);
-        float c = dot(origin_diff, origin_diff) - pow(spheres[i].radius, 2.0);
-        float delta = b*b - a * c;
+        a = dot(ray.direction, ray.direction);
+        b = dot(origin_diff, ray.direction);
+        c = dot(origin_diff, origin_diff) - pow(spheres[i].radius, 2.0);
+        delta = b*b - a * c;
         if(delta > 0.0) {
-            float sqrt_delta = sqrt(delta); // reuse c
-            float t1 = (-b + sqrt_delta) / a;
-            float t2 = (-b - sqrt_delta) / a;
+            c = sqrt(delta); // reuse c, sqrt_delta
+            temp_t = (-b + c) / a; // reuse temp_t as t1
+            delta  = (-b - c) / a; // reuse delta  as t2
 
-            if(t1 < 0.0) t1 = MAX_RAY_LENGTH;
-            if(t2 < 0.0) t2 = MAX_RAY_LENGTH;
+            if(temp_t * delta <= 0.0001) thres = 0.1;
 
-            float temp_t = min(t1, t2); //reuse t1
+            if(temp_t <= 0.0) temp_t = MAX_RAY_LENGTH;
+            if(delta <= 0.0) delta = MAX_RAY_LENGTH;
 
-            if(temp_t < t) {
+            temp_t = min(temp_t, delta);
+
+            // if(materials[spheres[i].material].opacity)
+            if(temp_t < t && temp_t > thres) {
                 t = temp_t;
                 index = i;
             }
         }
     }
-    if(t != MAX_RAY_LENGTH) {
+    if(index != -1) {
         hit.t = t;
         hit.point = ray.origin + ray.direction * t;
         hit.normal = normalize(hit.point - spheres[index].position);
-        hit.point += hit.normal * EPS;
         hit.material = spheres[index].material;
         hit.type = SPHERE_HIT;
     }
 
+    index = -1;
+    float denominator, numerator;
     for(int i=0; i < PLANES_COUNT; i++) { // 2 cancels
+        denominator = dot(ray.direction, planes[i].normal);
+        if(denominator < 0.0) {
+            numerator = dot(planes[i].position - ray.origin, planes[i].normal);
+            temp_t = numerator/denominator;
+            if(temp_t < t && temp_t > EPS){
+              vec3 point = ray.origin + ray.direction * temp_t;
+              mat3 R = vec_to_vec_map(planes[i].normal, UP);
+              vec3 ps_point = abs(R * (point - planes[i].position));
+                if(max(ps_point.x, ps_point.z) < planes[i].size){
+                    t = temp_t;
+                    index = i;
+                }
+            }
+        }
 
+    }
+    if(index != -1) {
+        hit.t = t;
+        hit.point = ray.origin + ray.direction * t;
+        hit.normal = planes[index].normal;
+        hit.material = planes[index].material;
+        hit.type = PLANE_HIT;
     }
 
     if(t == MAX_RAY_LENGTH) {
         hit.t = -1.0;
         hit.type = SKYBOX_HIT;
+        hit.material = SKYBOX_MATERIAL;
     }
     return hit;
 
 }
 
+//TEMP
+Hit intersect(Ray ray) {return intersect(ray, false);}
+
 //=============================== mainfrag
+// #define LIGHT
+// #define LIGHTBLEED
+
 Ray rays[MAX_RAY_STEPS + 1];
 Hit hits[MAX_RAY_STEPS + 1];
 
@@ -462,16 +512,12 @@ Camera camera;
 Ray cam_ray;
 
 void main() {
-    spheres[0].position.x = sin(u_time) * 4.0;
-    spheres[0].position.y = cos(u_time) * 4.0;
 
-    spheres[1].position.z = 1.0 + sin(u_time);
     camera.position = vec3(0.0,1.0,-5.0);
     camera.direction = vec3(0.0,0.0,0.0);
 
     //LAMP
     
-    point_lights[0].position.z =cos(u_time);
 
     cam_ray.origin = camera.position;
 
@@ -483,42 +529,91 @@ void main() {
         (v_position.xyz + FORWARD);
 
     vec3 out_col = vec3(0.0);
+    Hit lightprobe;
+
+    vec3 lightbleed = vec3(0.0);
+#ifdef LIGHTBLEED
+    for(int rpp = 0; rpp < RAYS_PER_FRAGMENT; rpp++) {
+        lightprobe = intersect(Ray(camera.position, 
+                                   normalize(cam_ray.direction  +
+                                             prand_uvec3(campos.xy,rpp) *
+                                             prand(campos.xy,rpp) *
+                                             float(rpp)/float(RAYS_PER_FRAGMENT) * 0.6 
+                                             )));
+        if(lightprobe.t > 0.0) {
+            Material mat = materials[lightprobe.material];
+            vec3 emission = max(vec3(0.0), mat.albedo - vec3(1.0));
+            lightbleed += emission;
+        }
+    }
+    lightbleed /= RAYS_PER_FRAGMENT * 2;
+#endif
     for(int rpp = 0; rpp < RAYS_PER_FRAGMENT; rpp++) {
       vec3 color = vec3(0.0);
-      campos += prand_uvec3(campos.xy,rpp)*0.01;
+      campos += prand_uvec3(campos.xy,rpp)*0.001;
 
 
       cam_ray.direction = (v_position.xyz + FORWARD);
       rays[0] = cam_ray;
       int r = 0;
+      float prev_eta = WORLD_REFRACTIVE_INDEX;
       for(r = 0; r < MAX_RAY_STEPS; r++) {
           hits[r] = intersect(rays[r]);
           Material mat = materials[hits[r].material];
 
-          if(hits[r].t > 0.0) {
-              vec3 ref =
-                  normalize(reflect(hits[r].normal, rays[r].direction) +
-                            prand_uvec3(campos.xy,r) * mat.roughness);
-              if(dot(ref, hits[r].normal) < EPS) {ref = -ref;}
+          if(hits[r].t > EPS) {
+              vec3 lift = hits[r].normal * EPS;
+              
+              if(mat.opacity < trand(campos.xy,r) && hits[r].type != PLANE_HIT) {
+                  // vec3 refr = rays[r].direction;
 
-              rays[r + 1] = Ray(hits[r].point, ref);
+                  // if(sign(dot(hits[r].normal, rays[r].direction)) < 0.0) {lift = -lift;}
+                  float curr_eta = prev_eta / mat.eta;
+                  vec3 refr =
+                      normalize(refract(hits[r].normal,rays[r].direction, curr_eta) +
+                             prand_uvec3(campos.xy,r) * mat.roughness);
+
+                  prev_eta = mat.eta;
+
+                      // normalize(reflect(hits[r].normal, rays[r].direction) +
+                      //           prand_uvec3(campos.xy,r) * mat.roughness);
+                  rays[r + 1] = Ray(hits[r].point + lift
+                                    , refr);
+
+              } else {
+                  vec3 refl =
+                      normalize(reflect(hits[r].normal, rays[r].direction) +
+                                prand_uvec3(campos.xy,r) * mat.roughness);
+                  if(dot(refl, hits[r].normal) < EPS) {refl = -refl;}
+                  rays[r + 1] = Ray(hits[r].point + lift,
+                                    refl);
+              }
           } else break;
       }
       for(int i=r; i >= 0; i--) {
           if(hits[i].type == SKYBOX_HIT) {
               float l = (v_position.y + 1.0) * 0.5;
-              color += (1.0 - l) * SALMON + l * STEEL_BLUE;
-              color *= 0.8;
+              color += (1.0 - l) * RED + l * STEEL_BLUE;
+              color *= 0.1;
           } else {
-
-              Hit lightprobe;
-              for(int pl = 0; pl < POINT_LIGHTS_COUNT; pl++){
-                  lightprobe =
-                      intersect(Ray(hits[i].point,
-                                    point_lights[0].position - hits[i].point
-                                    ));
-                  if(lightprobe.t == -1.0) {color += point_lights[0].emission;}
+              vec3 light = vec3(0.0);
+              int lp = 0;
+              // HARD LIGHT PROBLES, POINT LIGHTS
+              // SOFT LIGHT PROBES
+#ifdef LIGHT
+              for(lp = 0; lp < LIGHT_PROBES; lp++){
+                  lightprobe = intersect(Ray(hits[i].point,
+                                             normalize(hits[i].normal * 1.1 +
+                                                       prand_uvec3(campos.xy,r))));
+                  if(lightprobe.t > 0.0) {
+                      Material mat = materials[lightprobe.material];
+                      vec3 emission = max(vec3(0.0), mat.albedo - vec3(1.0));
+                      light += emission;
+                  }
               }
+              color += light / float(lp);
+#endif
+
               Material mat = materials[hits[i].material];
               vec3 emission = max(mat.albedo - vec3(1.0), vec3(0.0));
               vec3 reflection = mat.albedo - emission;
@@ -528,10 +623,10 @@ void main() {
 
           }
       }
-      out_col += color;
+      out_col += color + lightbleed;
     }
     out_col /= float(RAYS_PER_FRAGMENT);
-    // out_col = sqrt(out_col);
+    out_col = sqrt(out_col);
 
     gl_FragColor = vec4(out_col, 1.0);
 }

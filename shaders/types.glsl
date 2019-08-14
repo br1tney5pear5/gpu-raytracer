@@ -12,6 +12,8 @@ struct DirectionalLight{
 struct Material{
     vec3 albedo;
     float roughness;
+    float opacity;
+    float eta;
 };
 
 struct Ray{
