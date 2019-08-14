@@ -73,6 +73,10 @@ class ShaderBuilder {
 public:
     std::string read_file(std::string filename, std::error_code& ec);
 
+    void clear_modules();
+
+    bool has_module(std::string module_name);
+
     void add_module(std::string filename);
 
     std::optional<ShaderModule> get_module(std::string module_name);

@@ -2,6 +2,7 @@
 #include <regex>
 #include <tuple>
 #include <iostream>
+#include <thread>
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -51,6 +52,7 @@ int main(){
     std::vector<std::string> include_directories;
     builder.add_include_dir("/shared/projects/raytracer/shaders/");
     builder.add_module("main.frag");
+    builder.add_module("main.frag");
     builder.add_module("quaternion.glsl");
     builder.add_module("constants.glsl");
     builder.add_module("rays_util.glsl");
@@ -60,16 +62,32 @@ int main(){
 
     auto source = builder.build("mainfrag",ec);
 
-    CON();
-    auto sorted_modules = builder.get_sorted_modules_list();
-    for(auto m : sorted_modules) std::cout << m.name << "\n";
+    fs::path modules_path("../shaders/glslmodules");
 
-    CON();
-    std::cout << source;
+    using namespace std::chrono_literals;
 
-    
+    auto last_ftime = fs::last_write_time(modules_path);
+    while(true) {
+        std::this_thread::sleep_for(1.0s);
+        auto ftime = fs::last_write_time(modules_path);
+        if(true || ftime != last_ftime) {
+            std::ifstream modules(modules_path);
+            builder.clear_modules();
 
+            LOG("modified");
+            std::string line;
+            while(std::getline(modules,line)) {
+                builder.add_module(line);
+            }
+            std::error_code ec;
+            std::ofstream outfile("../shaders/output.frag");
+            outfile << builder.build("mainfrag", ec);
+            outfile.close();
 
+            modules.close();
+            last_ftime = ftime;
+        }
+    }
     return 0;
 }//main
 

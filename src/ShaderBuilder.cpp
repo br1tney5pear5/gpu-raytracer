@@ -53,13 +53,28 @@ std::string ShaderBuilder::read_file(std::string filename, std::error_code& ec){
     return file_contents;
 }
 
+void ShaderBuilder::clear_modules() {
+    modules.clear();
+}
 
+
+bool ShaderBuilder::has_module(std::string module_name) {
+    bool ret = false;
+    for(auto& m : modules) {
+        if(m.name == module_name) {
+            ret = true;
+        }
+    }
+    return ret;
+}
 
 void ShaderBuilder::add_module(std::string filename) {
     std::error_code ec;
     auto module = parse(filename, ec);
-    if(!ec) modules.push_back(module);
+    if(!ec && !has_module(module.name)) modules.push_back(module);
 }
+
+
 
 std::optional<ShaderModule> ShaderBuilder::get_module(std::string module_name) {
     for(auto& m : modules) {
@@ -119,10 +134,17 @@ std::string ShaderBuilder::build(std::string init_module_name, std::error_code& 
         return ret;
     }
 
-    size_t final_size = 0;
+    std::string header =
+        "#ifndef GLSLVIEWER\n"
+        "  #version 330\n"
+        "#endif\n";
+
+    size_t final_size = header.size();
     for(auto m : modules) final_size += m.source.size();
+
     ret.reserve(final_size);
 
+    ret += header;
     for(auto m : sorted_modules) ret += m.source;
 
     return ret;
@@ -147,10 +169,7 @@ bool ShaderBuilder::topo_sort_modules(ShaderModule& root_module,
     sorted_modules.clear();
     sorted_modules.reserve(modules.size());
 
-    auto opt_init = get_module("mainfrag");
-    if(! opt_init.has_value()) return false;
-
-    if(! topo_sort_recursive_visit(opt_init.value()) ){
+    if(! topo_sort_recursive_visit(root_module) ){
         ERROR("failed to resolve dependencies");
         return false;
     }
@@ -253,13 +272,12 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
                             ERROR("while parsing");
                             __CON(filename, ":", line_no_at(source, pos));
                             __CON(source_fragment);
-                            __CON();
                             __CON(msg);
                         };
 
 
 
-    std::regex preprocess_directive_regex("((?:__)[a-z_]+)(?:\\s+)(.*)\\n",
+    std::regex preprocess_directive_regex("(?:\\n)?((?:__)[a-z_]+)(?:\\s+)(\".*?\")(?:\\s+)?",
                                         std::regex_constants::ECMAScript
                                         // std::regex_constants::multiline
                                         );
@@ -344,7 +362,7 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
             std::string module_type = match[2];
 
             type_keyword_hits++;
-            if(module_keyword_hits > 1) 
+            if(type_keyword_hits > 1) 
                 parse_err(match.position(0), match[0],
                             "more than one type definition");
 
@@ -376,6 +394,11 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
                         std::string("unrecognised keyword " + keyword));
         }
     }
+
+    if(module.name.empty()){
+        ERROR("unnamed module in ", filename);
+    }
+
 
     size_t deleted_chars = 0;
     size_t inserted_chars = 0;

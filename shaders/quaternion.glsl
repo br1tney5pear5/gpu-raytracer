@@ -1,5 +1,5 @@
 __module "quaternion"
-__type "NONE"
+__uses "constants"
 
 vec4 quat_mult(vec4 q1, vec4 q2) { // TODO: OPTIMIZE
     vec4 qret;
