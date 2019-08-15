@@ -9,8 +9,6 @@ __uses "intersect"
 __type "FRAG"
 
 
-// #define LIGHT
-// #define LIGHTBLEED
 
 Ray rays[MAX_RAY_STEPS + 1];
 Hit hits[MAX_RAY_STEPS + 1];

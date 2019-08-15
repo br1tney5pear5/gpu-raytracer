@@ -502,9 +502,6 @@ Hit intersect(Ray ray, bool lightprobe) {
 Hit intersect(Ray ray) {return intersect(ray, false);}
 
 //=============================== mainfrag
-// #define LIGHT
-// #define LIGHTBLEED
-
 Ray rays[MAX_RAY_STEPS + 1];
 Hit hits[MAX_RAY_STEPS + 1];
 

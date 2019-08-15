@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <initializer_list>
 #include <optional>
 #include <unordered_map>
 #include <map>
@@ -41,53 +42,35 @@ namespace fs = std::filesystem;
 
 // constexpr size_t width=300, height=300;
 
-static void key_callback(GLFWwindow* win, int key, int /*scancode*/, int action, int /*mods*/){
-    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(win, GLFW_TRUE);
-}
 
 
 int main(){
     ShaderBuilder builder;
     std::vector<std::string> include_directories;
     builder.add_include_dir("/shared/projects/raytracer/shaders/");
-    builder.add_module("main.frag");
-    builder.add_module("main.frag");
-    builder.add_module("quaternion.glsl");
-    builder.add_module("constants.glsl");
-    builder.add_module("rays_util.glsl");
-    builder.add_module("random.glsl");
+    builder.import_modules_from_file("glslmodules");
+    builder.build("mainfrag");
 
     std::error_code ec;
 
-    auto source = builder.build("mainfrag",ec);
-
-    fs::path modules_path("../shaders/glslmodules");
-
     using namespace std::chrono_literals;
+    // LOG(sizeof(std::filesystem::file_time_type));
 
-    auto last_ftime = fs::last_write_time(modules_path);
-    while(true) {
-        std::this_thread::sleep_for(1.0s);
-        auto ftime = fs::last_write_time(modules_path);
-        if(true || ftime != last_ftime) {
-            std::ifstream modules(modules_path);
-            builder.clear_modules();
 
-            LOG("modified");
-            std::string line;
-            while(std::getline(modules,line)) {
-                builder.add_module(line);
-            }
-            std::error_code ec;
-            std::ofstream outfile("../shaders/output.frag");
-            outfile << builder.build("mainfrag", ec);
-            outfile.close();
+    // while(true) {
+    //     std::this_thread::sleep_for(1.0s);
+    //     if(true || ftime != last_ftime) {
+    //         builder.clear_modules();
+    //         builder.import_modules_from_file("glslmodules");
 
-            modules.close();
-            last_ftime = ftime;
-        }
-    }
+    //         std::ofstream outfile("../shaders/output.frag");
+    //         outfile << builder.build("mainfrag", ec);
+    //         outfile.close();
+
+    //         modules.close();
+    //         last_ftime = ftime;
+    //     }
+    // }
     return 0;
 }//main
 
