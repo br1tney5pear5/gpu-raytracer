@@ -1,4 +1,5 @@
 #include "ShaderBuilder.h"
+
 #include <regex>
 #include <tuple>
 #include <fstream>
@@ -9,12 +10,56 @@
 
 namespace fs = std::filesystem;
 
+namespace std {
+    template <>
+    struct is_error_code_enum<ShaderBuilderErrc> : true_type {};
+}
+namespace {
+    struct ShaderBuilderErrCategory : std::error_category {
+        const char* name() const noexcept override;
+        std::string message(int ev) const override;
+    };
+
+    const char* ShaderBuilderErrCategory::name() const noexcept {
+        return "shader_builder";
+    }
+
+    std::string ShaderBuilderErrCategory::message(int ev) const {
+        switch (static_cast<ShaderBuilderErrc>(ev)) {
+        case ShaderBuilderErrc::success:
+            return "Success";
+        case ShaderBuilderErrc::file_read_error:
+            return "Failed to read file";
+        case ShaderBuilderErrc::file_does_not_exist:
+            return "Specified file does not exist.";
+        case ShaderBuilderErrc::file_is_not_regular_file:
+            return "Specified module file is not a regular file.";
+        case ShaderBuilderErrc::include_dir_does_not_exist :
+            return "Specified include directory does not exist";
+        case ShaderBuilderErrc::include_dir_is_not_a_directory:
+            return "Specified include directory path does not lead to directory";
+        case ShaderBuilderErrc::circular_dependency:
+            return "Circular dependency found; dependency graph is not acyclic.";
+        case ShaderBuilderErrc::missing_dependency:
+            return "Missing dependency; Cannot find required module";
+        case ShaderBuilderErrc::syntax_error:
+            return "Failed to parse shader module.";
+        default:
+            return "(unrecognized error)";
+        }
+    }
+
+    const ShaderBuilderErrCategory theShaderBuilderErrCategory {};
+}
+
+
 static std::error_code make_error_code(ShaderBuilderErrc e) {
     return {static_cast<int>(e), theShaderBuilderErrCategory};
 }
 
+
 /// Removes all modules in builder
-void ShaderBuilder::clear_modules() {
+void ShaderBuilder::clear_modules() noexcept {
     modules.clear();
 }
 
@@ -23,7 +68,7 @@ void ShaderBuilder::clear_modules() {
 ///
 /// @param module_name Name of module to look for
 /// @return True if module is present, false otherways
-bool ShaderBuilder::has_module(std::string module_name) {
+bool ShaderBuilder::has_module(std::string module_name) const {
     bool ret = false;
     for(auto& m : modules)
         if(m.name == module_name) ret = true;
@@ -46,12 +91,17 @@ void ShaderBuilder::add_module(std::string filename) {
 /// @param filename Name of the file with module
 /// @param ec Error code
 void ShaderBuilder::add_module(std::string filename, std::error_code& ec) {
+    ec = ShaderBuilderErrc::success;
     auto module = parse(filename, ec);
 #ifdef SHADER_BUILDER_HOT_REBUILD_SUPPORT
+    if(ec) {last_ec = ec; return;}
     module.path = get_file_path(filename, ec);
     module.last_write_time = fs::last_write_time(module.path);
 #endif
-    if(!ec && !has_module(module.name)) modules.push_back(module);
+    if(!ec && !has_module(module.name))
+        modules.push_back(module);
+    last_ec = ec;
+    return;
 }
 
 
@@ -70,6 +120,7 @@ void ShaderBuilder::add_modules(std::initializer_list<std::string> modules){
 void ShaderBuilder::add_modules(std::initializer_list<std::string> modules,
                                 std::error_code& ec){
     for(auto& module : modules) add_module(module, ec); 
+    last_ec = ec;
 }
 
 
@@ -84,18 +135,26 @@ void ShaderBuilder::import_modules_from_file(std::string modules_list_filename) 
 /// @param ec Error code
 void ShaderBuilder::import_modules_from_file(std::string modules_list_filename,
                                           std::error_code& ec) {
+    ec = ShaderBuilderErrc::success;
     std::stringstream ss(read_file(modules_list_filename, ec));
+    if(ec) {
+        last_ec = ec;
+        return;
+    }
 
     for(std::string line; std::getline(ss,line);) {
         add_module(line, ec);
+        if(ec) break;
     }
+    last_ec = ec;
+    return;
 }
 
 
 /// Returns given module by value
 /// @param module_name
 /// @return module specified by module_name or nothing if no such module is present
-std::optional<ShaderModule> ShaderBuilder::get_module(std::string module_name) {
+std::optional<ShaderModule> ShaderBuilder::get_module(std::string module_name) const {
     for(auto& m : modules) {
         if(m.name == module_name) {
             return std::optional<ShaderModule>(m);
@@ -148,18 +207,42 @@ void ShaderBuilder::add_include_dir(std::string dir){
 /// @param ec Error code
 void ShaderBuilder::add_include_dir(std::string dir, std::error_code& ec){
     fs::path dirpath(dir);
-    if(fs::exists(dirpath, ec) && !ec &&
-       fs::is_directory(dirpath, ec) && !ec) {
-        include_dirs.push_back(dir);
+
+    if(fs::exists(dirpath, ec) && !ec) {
+        if(fs::is_directory(dirpath, ec) && !ec) {
+            include_dirs.push_back(dir);
+        } else {
+            if(!ec) ec = ShaderBuilderErrc::include_dir_is_not_a_directory;
+                // else let std::filesystem error_code through
+        }
+    } else {
+        if(!ec) ec = ShaderBuilderErrc::include_dir_does_not_exist;
+            // else let std::filesystem error_code through
     }
+    last_ec = ec;
 }
 
 
-
+/// Builds shader
+///
+/// Takes name of the init module as parameter and builds shader incuding it,
+/// all of it's dependencies and all dependencies of dependecies etc.
+/// Noteworthy, modules that were added to the builder but are not used
+/// in a given shader are not going to be included in the output shader.
+/// @param init_module_name name of root module to start with - your main method
+/// @return resulting shader as string
 std::string ShaderBuilder::build(std::string init_module_name){
     return build(init_module_name, last_ec);
 }
-
+/// Builds shader
+///
+/// Takes name of the init module as parameter and builds shader incuding it,
+/// all of it's dependencies and all dependencies of dependecies etc.
+/// Noteworthy, modules that were added to the builder but are not used
+/// in a given shader are not going to be included in the output shader.
+/// @param init_module_name name of root module to start with - your main method
+/// @param ec Error code
+/// @return resulting shader as string
 std::string ShaderBuilder::build(std::string init_module_name, std::error_code& ec){
     std::string ret = "";
     auto opt_init_module = get_module_mut(init_module_name);
@@ -167,6 +250,7 @@ std::string ShaderBuilder::build(std::string init_module_name, std::error_code& 
         topo_sort_modules(opt_init_module.value(),ec);
     else {
         ERROR("init build module ", init_module_name, " not found");
+        last_ec = ec;
         return ret;
     }
 
@@ -178,18 +262,22 @@ std::string ShaderBuilder::build(std::string init_module_name, std::error_code& 
     ret += header;
     for(auto m : sorted_modules) ret += m.source;
 
+    last_ec = ec;
     return ret;
 }
 
+std::error_code ShaderBuilder::get_last_ec() const {
+    return last_ec;
+}
 
-
-//TODO: Optimize that!
+/// Sorts modules according to their dependencies
+///
 /// Performs module topological sort so modules are included in correct order
 /// Fails if finds circular dependency or missing dependency
 ///
 /// @param ec error_code - unused
-/// @return true unless it fails
-///
+/// @return true, unless it fails
+/// @todo optimize sort, make non recursive
 bool ShaderBuilder::topo_sort_modules(ShaderModule& root_module,
                                       [[maybe_unused]]std::error_code& ec) {
    for(auto& m : modules){
@@ -200,14 +288,20 @@ bool ShaderBuilder::topo_sort_modules(ShaderModule& root_module,
     sorted_modules.clear();
     sorted_modules.reserve(modules.size());
 
-    if(! topo_sort_recursive_visit(root_module) ){
+    if(! topo_sort_recursive_visit(root_module, ec) ){
         ERROR("failed to resolve dependencies");
+        last_ec = ec;
         return false;
     }
+    last_ec = ec;
     return true;
 }
 
-bool ShaderBuilder::topo_sort_recursive_visit(ShaderModule& module){
+/// Recursive part of topo_sort_modules
+///
+/// @param module currenty "visited" module
+/// @return true on success, false if there is circular or missing dependency
+bool ShaderBuilder::topo_sort_recursive_visit(ShaderModule& module, std::error_code& ec){
     if(module.perm_mark == true) return true;
     if(module.temp_mark == true) return false;
 
@@ -216,13 +310,15 @@ bool ShaderBuilder::topo_sort_recursive_visit(ShaderModule& module){
     for(auto& dep_name : module.used_modules) {
         auto opt_dep = get_module_mut(dep_name); // NOTE: opt_ prefix marks optional
         if(opt_dep.has_value()) {
-            bool is_acyclic = topo_sort_recursive_visit(opt_dep.value());
+            bool is_acyclic = topo_sort_recursive_visit(opt_dep.value(), ec);
             if(!is_acyclic) {
+                ec = ShaderBuilderErrc::circular_dependency;
                 ERROR("circular dependency ", dep_name);
                 __CON("used by ", module.name);
                 return false;
             };
         } else {
+            ec = ShaderBuilderErrc::missing_dependency;
             ERROR("missing module ", dep_name);
             __CON("used by ", module.name);
             return false;
@@ -241,16 +337,15 @@ bool ShaderBuilder::topo_sort_recursive_visit(ShaderModule& module){
 /// Detects shader type depending on filename extension
 ///
 /// For filename with a given extension it will return
-/// "*.vert" - VERT
-/// "*.frag" - FRAG
-/// "*.geom" - GEOM
-/// "*.comp" - COMP
+/// "*.vert"      - VERT
+/// "*.frag"      - FRAG
+/// "*.geom"      - GEOM
+/// "*.comp"      - COMP
 /// "*.tess_ctrl" - TESS_CTRL
 /// "*.tess_eval" - TESS_EVAL
 ///
 /// @param filename name of the file
 /// @return return detected type or type NONE
-///
 ShaderType ShaderBuilder::detect_type(std::string filename){
     ShaderType detected_type = ShaderType::NONE;
     //NOTE: not perfect but certainly good enough
@@ -279,11 +374,49 @@ ShaderType ShaderBuilder::detect_type(std::string filename){
 
 
 
-//TODO: multipass
+/// Parses shader module file
+///
+/// Reads and parses directive starting with "__"
+/// Currenly it supports:
+///
+/// __module "name"      - Specifies name of parsed module
+///                        Required.
+///
+/// __type "shadertype"  - Specifies shader type,
+///                        overwrites type file extension detected type.
+///
+/// __uses "modulename"  - Declares module of given name
+///                        as dependency of module that is parsed/
+///
+/// __include "filename" - With literally inserts contents of file with given
+///                        filename into parsed file. It ought to be used only internally.
+/// @param filename Name of the file to be parsed
+/// @return Shader module object
+/// @todo multipass
 ShaderModule ShaderBuilder::parse(const std::string filename) {
     return parse(filename, last_ec);
 }
 
+/// Parses shader module file
+///
+/// Reads and parses directive starting with "__"
+/// Currenly it supports:
+///
+/// __module "name"      - Specifies name of parsed module
+///                        Required.
+///
+/// __type "shadertype"  - Specifies shader type,
+///                        overwrites type file extension detected type.
+///
+/// __uses "modulename"  - Declares module of given name
+///                        as dependency of module that is parsed/
+///
+/// __include "filename" - With literally inserts contents of file with given
+///                        filename into parsed file. It ought to be used only internally.
+/// @param filename Name of the file to be parsed
+/// @param ec Error code
+/// @return Shader module object
+/// @todo multipass
 ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& ec) {
 
     std::string source = read_file(filename, ec);
@@ -291,7 +424,10 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
     ShaderModule module;
     module.type = detect_type(filename);
 
-    if(ec) return module;
+    if(ec) {
+        last_ec = ec;
+        return module;
+    }
 
     auto line_no_at = [](const std::string& str, size_t pos) -> size_t {
                             size_t line_no = 1;
@@ -301,10 +437,20 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
                         };
 
     auto parse_err = [&](size_t pos, std::string source_fragment, std::string msg){
+                            ec = ShaderBuilderErrc::syntax_error;
                             ERROR("while parsing");
                             __CON(filename, ":", line_no_at(source, pos));
                             __CON(source_fragment);
                             __CON(msg);
+                        };
+
+    // if is surrounded by quotes deletes them and returns true, false otherwise
+    auto remove_quotes = [](std::string& str) -> bool {
+                             if(*(str.begin()) == '"' && *(str.end()-1) == '"') {
+                                 str.erase(0,1);
+                                 str.erase(str.size()-1,1);
+                                 return true;
+                             } else return false;
                         };
 
 
@@ -317,6 +463,7 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
     //       line no        delete       include
     std::map<int, std::pair<std::string, std::string>> edit_map;
 
+    // edits are executed after parsing
     auto edit_at = [&](size_t pos,
                         const std::string& deletion,
                         const std::string& insertion)
@@ -326,8 +473,8 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
                     };
 
     auto begin = std::sregex_iterator(source.cbegin(),
-                                        source.cend(),
-                                        preprocess_directive_regex);
+                                      source.cend(),
+                                      preprocess_directive_regex);
     auto end = std::sregex_iterator();
 
     size_t module_keyword_hits = 0; //NOTE: there ought to be only one module per file (for now)
@@ -336,16 +483,11 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
     for(auto i = begin;  i != end; ++i) {
         std::smatch match = *i;
         const std::string& keyword = match[1];
+
         if(match.size() == 3 && keyword == "__include") {
             std::string include_filename = match[2];
 
-            if(*(include_filename.begin()) == '"' &&
-                *(include_filename.end()-1) == '"')
-            {
-                include_filename.erase(0,1);
-                include_filename.erase(include_filename.size()-1,1);
-
-                std::error_code ec;
+            if(remove_quotes(include_filename)) {
                 std::string include_file_contents = read_file(include_filename, ec);
 
                 if(!ec) {
@@ -366,12 +508,7 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
                 parse_err(match.position(0), match[0],
                             "more than one module definition");
 
-
-            if(*(module_name.begin()) == '"' &&
-                *(module_name.end()-1) == '"')
-            {
-                module_name.erase(0,1);
-                module_name.erase(module_name.size()-1,1);
+            if(remove_quotes(module_name)) {
 
                 module.name = module_name;
 
@@ -380,11 +517,7 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
         } else if(match.size() == 3 && keyword == "__uses") {
             std::string used_module_name = match[2];
 
-            if(*(used_module_name.begin()) == '"' &&
-               *(used_module_name.end()-1) == '"')
-            {
-                used_module_name.erase(0,1);
-                used_module_name.erase(used_module_name.size()-1,1);
+            if(remove_quotes(used_module_name)) {
 
                 module.used_modules.push_back(used_module_name);
 
@@ -398,12 +531,7 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
                 parse_err(match.position(0), match[0],
                             "more than one type definition");
 
-            if(*(module_type.begin()) == '"' &&
-               *(module_type.end()-1) == '"')
-            {
-
-                module_type.erase(0,1);
-                module_type.erase(module_type.size()-1,1);
+            if(remove_quotes(module_type)) {
 
                      if(module_type == "NONE") module.type = ShaderType::NONE;
                 else if(module_type == "FRAG") module.type = ShaderType::FRAG;
@@ -424,6 +552,11 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
         else {
             parse_err(match.position(0), match[0],
                         std::string("unrecognised keyword " + keyword));
+        }
+
+        if(ec) {
+            last_ec = ec;
+            return module;
         }
     }
 
@@ -471,11 +604,20 @@ ShaderModule ShaderBuilder::parse(const std::string filename, std::error_code& e
         inserted_chars += insertion.size();
     }
     module.source = output;
+
+    last_ec = ec;
     return module;
 }
 
-
+/// Finds file and reads it's contents
+///
+/// This function searches for the file with given name in include paths,
+/// then reads and returns the first match.
+///
+/// @param filename Name of the file to be read
+/// @param ec Error code
 std::string ShaderBuilder::read_file(std::string filename, std::error_code& ec){
+    ec = ShaderBuilderErrc::success;
 
     bool file_opening_status = false;
 
@@ -485,35 +627,45 @@ std::string ShaderBuilder::read_file(std::string filename, std::error_code& ec){
     for(auto include_dir : include_dirs) {
         fs::path filepath(include_dir + filename);
 
-        std::error_code ec;
-        if(fs::exists(filepath, ec) && !ec &&
-           fs::is_regular_file(filepath, ec) && !ec)
-        {
-            auto file_size = fs::file_size(filepath);
+        if(fs::exists(filepath, ec) && !ec) {
+            if(fs::is_regular_file(filepath, ec) && !ec) {
+                auto file_size = fs::file_size(filepath);
+                file.open(filepath);
+                if(file.is_open() && file.good() ) {
+                    file_contents
+                        .reserve(file_size);
 
-            file.open(filepath);
-            if(file.is_open() && file.good() ) {
-                file_contents
-                    .reserve(file_size);
-
-                file_contents
-                    .assign((std::istreambuf_iterator<char>(file)),
-                            std::istreambuf_iterator<char>());
-                file_opening_status = true;
-                break;
-            } //|
-        } //    |
-    } //        |
-    // <--------*
-
-    if(!file_opening_status) {
-        ec = ShaderBuilderErrc::file_read_error;
-        ERROR("failed to open ", filename);
+                    file_contents
+                        .assign((std::istreambuf_iterator<char>(file)),
+                                std::istreambuf_iterator<char>());
+                    file_opening_status = true;
+                    break;
+                } else {
+                    ec = ShaderBuilderErrc::file_read_error;
+                }
+            } else {
+                if(!ec) ec = ShaderBuilderErrc::file_is_not_regular_file;
+                // else let std::filesystem error_code through
+            }
+        } else {
+            if(!ec) ec = ShaderBuilderErrc::file_does_not_exist;
+            // else let std::filesystem error_code through
+        }
     }
+
+    last_ec = ec;
     return file_contents;
 }
 
+
 #ifdef SHADER_BUILDER_HOT_REBUILD_SUPPORT
+/// Searches for file in include directories and returns it's path
+///
+/// Note that this function is only available when SHADER_BUILDER_HOT_REBUILD_SUPPORT is set
+///
+/// @param filename Name of the file to look for
+/// @param ec Error code
+/// @return Path to the given file
 fs::path ShaderBuilder::get_file_path(std::string filename, std::error_code& ec){
 
     bool filepath_status = false;
@@ -533,9 +685,19 @@ fs::path ShaderBuilder::get_file_path(std::string filename, std::error_code& ec)
         //TODO: hadnle error
     }
 
+    last_ec = ec;
     return filepath;
 }
 
+
+/// Checks whether the files associated with modules were modfied
+///
+/// Checks whether the files associated with modules were modfied,
+/// if so sets dirty flag on the ones that were modified and returns true.
+/// Note that this function and dirty flag is only enabled when
+/// SHADER_BUILDER_HOT_REBUILD_SUPPORT is set
+///
+/// @return true if any module needs reload, otherways false
 bool ShaderBuilder::check_for_dirty_modules() {
     bool any_dirty = false;
     for(auto& module : modules){
@@ -548,10 +710,33 @@ bool ShaderBuilder::check_for_dirty_modules() {
     }
     return any_dirty;
 }
-//NOTE: Would rebuild even if edited module is not used by root module
-//      or any of its dependencies
+/// Checks any of the modules sources were modified and rebuilds shader if so
 ///
+/// Note that it would rebuild even if dirty module is not used by root module
+/// or any of its dependencies
+/// Note that this function is only available when SHADER_BUILDER_HOT_REBUILD_SUPPORT is set
+///
+/// @param root_module Shader root module name - your main function
+/// @param output reference to string, to which save rebuilt shader
+/// @return true if rebuild was performed, false otherways
 bool ShaderBuilder::hot_rebuild(const std::string root_module, std::string& output) {
+    return hot_rebuild(root_module, output, last_ec);
+}
+
+/// Checks any of the modules sources were modified and rebuilds shader if so
+///
+/// Note that it would rebuild even if dirty module is not used by root module
+/// or any of its dependencies
+/// Note that this function is only available when SHADER_BUILDER_HOT_REBUILD_SUPPORT is set
+///
+/// @param root_module Shader root module name - your main function
+/// @param output reference to string, to which save rebuilt shader
+/// @return true if rebuild was performed, false otherways
+bool ShaderBuilder::hot_rebuild(const std::string root_module,
+                                std::string& output,
+                                std::error_code& ec) {
+    ec = ShaderBuilderErrc::success;
+
     bool needs_rebuild = false;
     if(check_for_dirty_modules()){
         for(auto& module : modules){
@@ -560,7 +745,7 @@ bool ShaderBuilder::hot_rebuild(const std::string root_module, std::string& outp
             }
         }
         if(needs_rebuild) {
-            output = build(root_module);
+            output = build(root_module, ec);
             return true;
         }
     }

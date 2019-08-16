@@ -85,3 +85,12 @@ builder.set_header(
   "#endif\n"
 );
 ```
+
+## Error Handling
+This library does not throw any exceptions (though I am not sure about exception safety,
+except for methods that are explicitly marked noexcept).
+[...]
+Unlike in standard library though overloads without error code parameter are also nonthrowing
+but instead of setting your error code they just pass internal last_ec which you can lookup instead.
+
+## Hot-Reload

@@ -22,8 +22,6 @@ void main() {
     camera.direction = vec3(0.0,0.0,0.0);
 
     //LAMP
-    
-
     cam_ray.origin = camera.position;
 
 

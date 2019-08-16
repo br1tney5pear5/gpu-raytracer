@@ -6,5 +6,5 @@ CXX_FLAGS = -g   -Wall -Wextra -Wpedantic -g -std=gnu++17
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/shared/projects/raytracer/include 
+CXX_INCLUDES = -I/shared/projects/raytracer/src 
 

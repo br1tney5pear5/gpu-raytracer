@@ -70,35 +70,9 @@ CMakeFiles/out.dir/src/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/out.dir/src/main.cpp.s"
 	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /shared/projects/raytracer/src/main.cpp -o CMakeFiles/out.dir/src/main.cpp.s
 
-CMakeFiles/out.dir/src/Hitable.cpp.o: CMakeFiles/out.dir/flags.make
-CMakeFiles/out.dir/src/Hitable.cpp.o: ../src/Hitable.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/shared/projects/raytracer/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/out.dir/src/Hitable.cpp.o"
-	/usr/bin/clang++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/out.dir/src/Hitable.cpp.o -c /shared/projects/raytracer/src/Hitable.cpp
-
-CMakeFiles/out.dir/src/Hitable.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/out.dir/src/Hitable.cpp.i"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /shared/projects/raytracer/src/Hitable.cpp > CMakeFiles/out.dir/src/Hitable.cpp.i
-
-CMakeFiles/out.dir/src/Hitable.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/out.dir/src/Hitable.cpp.s"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /shared/projects/raytracer/src/Hitable.cpp -o CMakeFiles/out.dir/src/Hitable.cpp.s
-
-CMakeFiles/out.dir/src/Ray.cpp.o: CMakeFiles/out.dir/flags.make
-CMakeFiles/out.dir/src/Ray.cpp.o: ../src/Ray.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/shared/projects/raytracer/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/out.dir/src/Ray.cpp.o"
-	/usr/bin/clang++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/out.dir/src/Ray.cpp.o -c /shared/projects/raytracer/src/Ray.cpp
-
-CMakeFiles/out.dir/src/Ray.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/out.dir/src/Ray.cpp.i"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /shared/projects/raytracer/src/Ray.cpp > CMakeFiles/out.dir/src/Ray.cpp.i
-
-CMakeFiles/out.dir/src/Ray.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/out.dir/src/Ray.cpp.s"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /shared/projects/raytracer/src/Ray.cpp -o CMakeFiles/out.dir/src/Ray.cpp.s
-
 CMakeFiles/out.dir/src/Shader.cpp.o: CMakeFiles/out.dir/flags.make
 CMakeFiles/out.dir/src/Shader.cpp.o: ../src/Shader.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/shared/projects/raytracer/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/out.dir/src/Shader.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/shared/projects/raytracer/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/out.dir/src/Shader.cpp.o"
 	/usr/bin/clang++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/out.dir/src/Shader.cpp.o -c /shared/projects/raytracer/src/Shader.cpp
 
 CMakeFiles/out.dir/src/Shader.cpp.i: cmake_force
@@ -111,7 +85,7 @@ CMakeFiles/out.dir/src/Shader.cpp.s: cmake_force
 
 CMakeFiles/out.dir/src/ShaderBuilder.cpp.o: CMakeFiles/out.dir/flags.make
 CMakeFiles/out.dir/src/ShaderBuilder.cpp.o: ../src/ShaderBuilder.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/shared/projects/raytracer/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/out.dir/src/ShaderBuilder.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/shared/projects/raytracer/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/out.dir/src/ShaderBuilder.cpp.o"
 	/usr/bin/clang++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/out.dir/src/ShaderBuilder.cpp.o -c /shared/projects/raytracer/src/ShaderBuilder.cpp
 
 CMakeFiles/out.dir/src/ShaderBuilder.cpp.i: cmake_force
@@ -122,43 +96,24 @@ CMakeFiles/out.dir/src/ShaderBuilder.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/out.dir/src/ShaderBuilder.cpp.s"
 	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /shared/projects/raytracer/src/ShaderBuilder.cpp -o CMakeFiles/out.dir/src/ShaderBuilder.cpp.s
 
-CMakeFiles/out.dir/src/Sphere.cpp.o: CMakeFiles/out.dir/flags.make
-CMakeFiles/out.dir/src/Sphere.cpp.o: ../src/Sphere.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/shared/projects/raytracer/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/out.dir/src/Sphere.cpp.o"
-	/usr/bin/clang++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/out.dir/src/Sphere.cpp.o -c /shared/projects/raytracer/src/Sphere.cpp
-
-CMakeFiles/out.dir/src/Sphere.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/out.dir/src/Sphere.cpp.i"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /shared/projects/raytracer/src/Sphere.cpp > CMakeFiles/out.dir/src/Sphere.cpp.i
-
-CMakeFiles/out.dir/src/Sphere.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/out.dir/src/Sphere.cpp.s"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /shared/projects/raytracer/src/Sphere.cpp -o CMakeFiles/out.dir/src/Sphere.cpp.s
-
 # Object files for target out
 out_OBJECTS = \
 "CMakeFiles/out.dir/src/main.cpp.o" \
-"CMakeFiles/out.dir/src/Hitable.cpp.o" \
-"CMakeFiles/out.dir/src/Ray.cpp.o" \
 "CMakeFiles/out.dir/src/Shader.cpp.o" \
-"CMakeFiles/out.dir/src/ShaderBuilder.cpp.o" \
-"CMakeFiles/out.dir/src/Sphere.cpp.o"
+"CMakeFiles/out.dir/src/ShaderBuilder.cpp.o"
 
 # External object files for target out
 out_EXTERNAL_OBJECTS =
 
 ../bin/out: CMakeFiles/out.dir/src/main.cpp.o
-../bin/out: CMakeFiles/out.dir/src/Hitable.cpp.o
-../bin/out: CMakeFiles/out.dir/src/Ray.cpp.o
 ../bin/out: CMakeFiles/out.dir/src/Shader.cpp.o
 ../bin/out: CMakeFiles/out.dir/src/ShaderBuilder.cpp.o
-../bin/out: CMakeFiles/out.dir/src/Sphere.cpp.o
 ../bin/out: CMakeFiles/out.dir/build.make
 ../bin/out: /usr/lib/libGLEW.so
 ../bin/out: /usr/lib/libGLX.so
 ../bin/out: /usr/lib/libOpenGL.so
 ../bin/out: CMakeFiles/out.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/shared/projects/raytracer/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable ../bin/out"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/shared/projects/raytracer/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable ../bin/out"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/out.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

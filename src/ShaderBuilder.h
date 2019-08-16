@@ -7,15 +7,15 @@
 #include <filesystem>
 
 #define SHADER_BUILDER_HOT_REBUILD_SUPPORT
+
 enum class ShaderType {NONE, VERT, FRAG, GEOM, COMP, TESS_CTRL, TESS_EVAL};
 
-struct ShaderModule { //TODO: you could hash module names
+struct ShaderModule {
     std::string name;
     std::vector<std::string> used_modules;
     std::string source;
     ShaderType type = ShaderType::NONE;
 
-    //NOTE: used for hot reload
 #ifdef SHADER_BUILDER_HOT_REBUILD_SUPPORT
     std::filesystem::path path;
     std::filesystem::file_time_type last_write_time;
@@ -27,44 +27,26 @@ struct ShaderModule { //TODO: you could hash module names
     bool perm_mark;
 };
 
-enum class ShaderBuilderErrc {
-                              file_read_error
+enum class ShaderBuilderErrc {success = 0,
+                              file_read_error,
+                              file_does_not_exist,
+                              file_is_not_regular_file,
+                              include_dir_does_not_exist,
+                              include_dir_is_not_a_directory,
+                              circular_dependency,
+                              missing_dependency,
+                              syntax_error
 };
 
-namespace std {
-    template <>
-    struct is_error_code_enum<ShaderBuilderErrc> : true_type {};
-}
-namespace {
-    struct ShaderBuilderErrCategory : std::error_category {
-        const char* name() const noexcept override;
-        std::string message(int ev) const override;
-    };
-
-    const char* ShaderBuilderErrCategory::name() const noexcept {
-    return "flights";
-    }
-
-    std::string ShaderBuilderErrCategory::message(int ev) const {
-    switch (static_cast<ShaderBuilderErrc>(ev)) {
-        case ShaderBuilderErrc::file_read_error:
-            return "failed to read file";
-        default:
-            return "(unrecognized error)";
-        }
-    }
-
-    const ShaderBuilderErrCategory theShaderBuilderErrCategory {};
-}
 /// Stores and assembles shader modules
 ///
 /// Rather hefty class handling parsing and storing modules and their interdependencies.
 /// Meant to have only one instance, that builds one or many shaders sharing dependencies.
 class ShaderBuilder {
 public:
-    void clear_modules();
+    void clear_modules() noexcept;
 
-    bool has_module(std::string module_name);
+    bool has_module(std::string module_name) const;
 
     void set_header(std::string header);
 
@@ -77,7 +59,7 @@ public:
     void import_modules_from_file(std::string modules_list_filename);
     void import_modules_from_file(std::string modules_list_filename, std::error_code& ec);
 
-    std::optional<ShaderModule> get_module(std::string module_name);
+    std::optional<ShaderModule> get_module(std::string module_name) const;
     std::optional<std::reference_wrapper<ShaderModule>>
       get_module_mut(std::string module_name);
 
@@ -96,12 +78,18 @@ public:
 
     bool hot_rebuild(const std::string root_module, std::string& output);
 
+    bool hot_rebuild(const std::string root_module,
+                     std::string& output,
+                     std::error_code& ec);
+
 #endif
+
+    std::error_code get_last_ec() const;
 
 private:
 
-    bool topo_sort_modules(ShaderModule& root_module,std::error_code& ec);
-    bool topo_sort_recursive_visit(ShaderModule& module);
+    bool topo_sort_modules(ShaderModule& root_module, std::error_code& ec);
+    bool topo_sort_recursive_visit(ShaderModule& module, std::error_code& ec);
 
     ShaderType detect_type(std::string filename);
 
