@@ -35,7 +35,8 @@ enum class ShaderBuilderErrc {success = 0,
                               include_dir_is_not_a_directory,
                               circular_dependency,
                               missing_dependency,
-                              syntax_error
+                              syntax_error,
+                              ill_formed_module
 };
 
 /// Stores and assembles shader modules
@@ -49,6 +50,8 @@ public:
     bool has_module(std::string module_name) const;
 
     void set_header(std::string header);
+
+    size_t get_modules_count() const noexcept;
 
     void add_module(std::string filename);
     void add_module(std::string filename, std::error_code& ec);
@@ -65,6 +68,8 @@ public:
 
     const std::vector<ShaderModule>& get_modules_list();
     const std::vector<ShaderModule>& get_sorted_modules_list();
+
+    size_t get_include_dirs_count() const noexcept;
 
     void add_include_dir(std::string dir);
     void add_include_dir(std::string dir, std::error_code& ec);
@@ -89,24 +94,34 @@ public:
 private:
 
     bool topo_sort_modules(ShaderModule& root_module, std::error_code& ec);
-    bool topo_sort_recursive_visit(ShaderModule& module, std::error_code& ec);
+    void topo_sort_recursive_visit(ShaderModule& module, std::error_code& ec);
 
     ShaderType detect_type(std::string filename);
 
-    ShaderModule parse(const std::string filename);
+    std::string detect_name(std::string filename);
+
     ShaderModule parse(const std::string filename, std::error_code& ec);
+
+    ShaderModule parse(const std::filesystem::path source_path, std::error_code& ec);
+
+    std::filesystem::path find_file(std::string filenmae, std::error_code& ec);
+
+    std::string read_file(std::filesystem::path filepath, std::error_code& ec);
 
     std::string read_file(std::string filename, std::error_code& ec);
 
+
 #ifdef SHADER_BUILDER_HOT_REBUILD_SUPPORT
     std::filesystem::path get_file_path(std::string filename, std::error_code& ec);
+
+    void reload_module(ShaderModule& module, std::error_code& ec);
 
 #endif
 
     std::string header;
     std::vector<ShaderModule> modules;
     std::vector<ShaderModule> sorted_modules;
-    std::vector<std::string> include_dirs; //change type to fs::path?
+    std::vector<std::filesystem::path> include_dirs; //change type to fs::path?
     std::error_code last_ec;
 };
 

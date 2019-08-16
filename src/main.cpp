@@ -30,8 +30,6 @@ int main(){
     std::error_code ec;
     builder.import_modules_from_file("glslmodules", ec);
 
-    LOG(ec.message());
-
     builder.build("mainfrag", ec);
 
 
@@ -40,7 +38,7 @@ int main(){
 
     //     std::this_thread::sleep_for(1.0s);
 
-        auto flag = builder.hot_rebuild("mainfrag", source);
+        // auto flag = builder.hot_rebuild("mainfrag", source);
 
     //     if(flag) {
     //         std::cout << source;
