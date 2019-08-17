@@ -2,8 +2,6 @@
 #include "catch.hpp"
 
 #include <fstream>
-#include <string>
-#include <streambuf>
 
 #include "ShaderBuilder.h"
 
@@ -198,37 +196,22 @@ TEST_CASE( "Modules manipulation" ) {
         first_file << "__eludom \"first\"\n"; // bad keyword
         first_file.close();
 
-        std::ofstream second_file("../test/res/second.glsl", std::ios_base::trunc);
-        second_file << "_module \"second\"\n"; // bad syntax
-        second_file.close();
-
         std::ofstream third_file("../test/res/third.glsl", std::ios_base::trunc);
         third_file << "__module \"\"\n";  // no module name
         third_file.close();
-
 
         builder.add_module("first.glsl", ec);
         REQUIRE(ec.value()
                 == static_cast<int>(ShaderBuilderErrc::syntax_error));
 
-        for(auto& m : builder.get_modules_list()) {
-            std::cout << (m.name) << "\n";
-        }
-
         REQUIRE(!builder.has_module("first"));
-        builder.add_module("second.glsl");
-
-        std::cout << ec.message();
-        // REQUIRE(ec.value()
-        //         == static_cast<int>(ShaderBuilderErrc::syntax_error));
-        REQUIRE(!builder.has_module("second"));
 
         builder.add_module("third.glsl");
-        // REQUIRE(ec.value()
-        //         == static_cast<int>(ShaderBuilderErrc::syntax_error));
+        REQUIRE(ec.value()
+                == static_cast<int>(ShaderBuilderErrc::syntax_error));
         REQUIRE(!builder.has_module("third"));
 
-        // REQUIRE(builder.get_modules_count() == 0);
+        REQUIRE(builder.get_modules_count() == 0);
     }
 
 }
@@ -393,7 +376,7 @@ TEST_CASE( "Hot rebuild" ) {
             "__module \"first\"\n"
             "__uses \"second\"\n"
             "__uses \"third\"\n";
-        
+
         first_file.close();
 
         std::ofstream second_file("../test/res/second.glsl", std::ios_base::trunc);

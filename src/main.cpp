@@ -18,6 +18,10 @@
 
 #include "ShaderBuilder.h"
 
+void log(std::string str) {
+    std::cout << str << "\n";
+}
+
 
 int main(){
     ShaderBuilder builder;
@@ -30,20 +34,22 @@ int main(){
     std::error_code ec;
     builder.import_modules_from_file("glslmodules", ec);
 
+    builder.register_log_callback(log);
+
     builder.build("mainfrag", ec);
 
 
-    // while(true) {
-    //     std::cout << "Checking for changes\n";
+    while(true) {
+        std::cout << "Checking for changes\n";
 
-    //     std::this_thread::sleep_for(1.0s);
+        std::this_thread::sleep_for(1.0s);
 
-        // auto flag = builder.hot_rebuild("mainfrag", source);
+        auto flag = builder.hot_rebuild("mainfrag", source);
 
-    //     if(flag) {
-    //         std::cout << source;
-    //     }
-    // }
+        // if(flag) {
+        //     std::cout << source;
+        // }
+    }
     return 0;
 }//main
 

@@ -1,12 +1,13 @@
 __module "math"
 __uses "quaternion"
 __uses "random"
+__uses "math"
 
 // reimplement with quaternions, there should be faster solution
 mat3 vec_to_vec_map(vec3 a, vec3 b) {
     if(a == b) return mat3(1.0);
     if(a == -b) return mat3(1.0);
-    vec3 v =  cross(a,b);
+    vec3 vn =  cross(a,b);
     float sine = length(v);
     float cosine = dot(a,b);
     mat3 V, R;

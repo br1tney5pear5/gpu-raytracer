@@ -5,8 +5,10 @@
 #include <iostream>
 #include <system_error>
 #include <filesystem>
+#include <functional>
 
 #define SHADER_BUILDER_HOT_REBUILD_SUPPORT
+#define SHADER_BUILDER_LOGGING
 
 enum class ShaderType {NONE, VERT, FRAG, GEOM, COMP, TESS_CTRL, TESS_EVAL};
 
@@ -19,7 +21,6 @@ struct ShaderModule {
 #ifdef SHADER_BUILDER_HOT_REBUILD_SUPPORT
     std::filesystem::path path;
     std::filesystem::file_time_type last_write_time;
-    bool dirty = false;
 #endif
 
     //NOTE: used for topological sorting
@@ -45,6 +46,11 @@ enum class ShaderBuilderErrc {success = 0,
 /// Meant to have only one instance, that builds one or many shaders sharing dependencies.
 class ShaderBuilder {
 public:
+
+#ifdef SHADER_BUILDER_LOGGING
+    void register_log_callback(std::function<void(std::string)> log_callback);
+#endif
+
     void clear_modules() noexcept;
 
     bool has_module(std::string module_name) const;
@@ -79,8 +85,6 @@ public:
 
 
 #ifdef SHADER_BUILDER_HOT_REBUILD_SUPPORT
-    bool check_for_dirty_modules();
-
     bool hot_rebuild(const std::string root_module, std::string& output);
 
     bool hot_rebuild(const std::string root_module,
@@ -91,7 +95,7 @@ public:
 
     std::error_code get_last_ec() const;
 
-private:
+public:
 
     bool topo_sort_modules(ShaderModule& root_module, std::error_code& ec);
     void topo_sort_recursive_visit(ShaderModule& module, std::error_code& ec);
@@ -110,14 +114,17 @@ private:
 
     std::string read_file(std::string filename, std::error_code& ec);
 
+    void log(std::string message);
 
 #ifdef SHADER_BUILDER_HOT_REBUILD_SUPPORT
     std::filesystem::path get_file_path(std::string filename, std::error_code& ec);
 
     void reload_module(ShaderModule& module, std::error_code& ec);
-
 #endif
 
+#ifdef SHADER_BUILDER_LOGGING
+    std::function<void(std::string)> log_callback;
+#endif
     std::string header;
     std::vector<ShaderModule> modules;
     std::vector<ShaderModule> sorted_modules;
