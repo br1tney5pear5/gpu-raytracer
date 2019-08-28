@@ -1,5 +1,5 @@
 
-__module "util"
+#module "util"
 
 vec3 split(vec3 a, vec3 b, bool trigger) {
     if(!trigger) return a;

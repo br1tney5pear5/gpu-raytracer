@@ -1,9 +1,8 @@
-#module "scene"
+#module "cornell"
 #uses "constants"
 #uses "types"
 #uses "math"
-
-#if (SCENE == 0)
+#if(SCENE == 2)
 #define DIRECTIONAL_LIGHTS_COUNT 1
 DirectionalLight directional_lights[DIRECTIONAL_LIGHTS_COUNT] = 
     DirectionalLight[](DirectionalLight(vec3(1.0,-1.0,0.0), vec3(0.2,0.2,0.2)));
@@ -54,60 +53,4 @@ Box boxes[BOXES_COUNT] =
               rot_axis_angle(UP, 10)
               , 1)
           );
-
-#elif (SCENE == 1)
-
-// #define DIRECTIONAL_LIGHTS
-#ifdef DIRECTIONAL_LIGHTS
-  #define DIRECTIONAL_LIGHTS_COUNT 1
-  DirectionalLight directional_lights[DIRECTIONAL_LIGHTS_COUNT] = 
-      DirectionalLight[](DirectionalLight(vec3(1.0,-1.0,0.0), vec3(0.2,0.2,0.2)));
-#endif
-
-// #define POINT_LIGHTS
-#ifdef DIRECTIONAL_LIGHTS
-  #define POINT_LIGHTS_COUNT 1
-  PointLight point_lights[POINT_LIGHTS_COUNT] = 
-      PointLight[](PointLight(vec3(0.0,4.0,4.0), vec3(0.2,0.2,0.2)));
-#endif
-
-
-#define MATERIALS_COUNT 6
-Material materials[MATERIALS_COUNT] =
-    Material[](
-               Material(vec3(1.0,1.0,1.0), 1.0 , 1.0, 1.0),// 0. white
-               Material(vec3(0.9,0.4,0.4), 1.0 , 1.0, 1.0),// 1. red
-               Material(vec3(0.4,0.4,0.9), 1.0 , 1.0, 1.0),// 2. blue
-               Material(vec3(3.0,3.0,3.0), 1.0 , 1.0, 1.0),// 3. light
-               Material(vec3(1.0,1.0,1.0), 0.0 , 1.0, 2.7),// 4. metal
-               Material(vec3(1.0,1.0,1.0), 0.0 , 0.1, 2.8) // 5. glass
-               );
-
-#define SPHERES
-#define SPHERES_COUNT 4
-Sphere spheres[SPHERES_COUNT] =
-    Sphere[](Sphere(vec3(-1.0,-1.5, 0.0), 0.5, 4),
-             Sphere(vec3( 0.8,-1.4,-0.5), 0.6, 5),
-             Sphere(vec3( -0.5,-1.8,-0.5), 0.2, 5),
-             Sphere(vec3( -1.0,-1.95,-0.5), 0.05, 5)
-             );
-
-#define PLANES
-#define PLANES_COUNT 6
-Plane planes[PLANES_COUNT] =
-    Plane[](Plane(vec3( 0.0,-2.0, 0.0), vec3( 0.0, 1.0, 0.0), vec2(2.01,2.01), 0),
-            Plane(vec3( 0.0, 2.0, 0.0), vec3( 0.0,-1.0, 0.0), vec2(2.01,2.01), 0),
-            Plane(vec3( 0.0, 0.0, 2.0), vec3( 0.0, 0.0,-1.0), vec2(2.01,2.01), 0),
-            Plane(vec3(-2.0, 0.0, 0.0), vec3( 1.0, 0.0, 0.0), vec2(2.01,2.01), 1),
-            Plane(vec3( 2.0, 0.0, 0.0), vec3(-1.0, 0.0, 0.0), vec2(2.01,2.01), 2),
-            Plane(vec3( 0.0, 1.99,0.0), vec3( 0.0,-1.0, 0.0), vec2(0.51,0.51), 3)
-            );
-
-#define BOXES_COUNT 1
-Box boxes[BOXES_COUNT] =
-    Box[](Box(vec3(-0.5,-1.2,0.8), vec3(0.5,1.2,0.5),
-              rot_axis_angle(UP, PI/3.0)
-              , 0)
-          );
-
 #endif

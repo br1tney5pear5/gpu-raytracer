@@ -1,6 +1,6 @@
-__module "scene"
-__uses "constants"
-__uses "types"
+#module "scene"
+#uses "constants"
+#uses "types"
 
 #define DIRECTIONAL_LIGHTS_COUNT 1
 DirectionalLight directional_lights[DIRECTIONAL_LIGHTS_COUNT] = 

@@ -1,4 +1,4 @@
-__module "types"
+#module "types"
 
 struct Material{
     float roughness;

@@ -1,6 +1,6 @@
-__module "math"
-__uses "quaternion"
-__uses "random"
+#module "math"
+#uses "quaternion"
+#uses "random"
 
 // reimplement with quaternions, there should be faster solution
 mat3 vec_to_vec_map(vec3 a, vec3 b) {

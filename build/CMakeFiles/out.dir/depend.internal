@@ -5,11 +5,8 @@ CMakeFiles/out.dir/src/Shader.cpp.o
  /shared/projects/raytracer/src/Logger.h
  /shared/projects/raytracer/src/Shader.cpp
  /shared/projects/raytracer/src/Shader.h
-CMakeFiles/out.dir/src/ShaderBuilder.cpp.o
- /shared/projects/raytracer/src/ShaderBuilder.cpp
- /shared/projects/raytracer/src/ShaderBuilder.h
 CMakeFiles/out.dir/src/main.cpp.o
+ ../include/modular-glsl.h
  /shared/projects/raytracer/src/Logger.h
  /shared/projects/raytracer/src/Shader.h
- /shared/projects/raytracer/src/ShaderBuilder.h
  /shared/projects/raytracer/src/main.cpp

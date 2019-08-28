@@ -1,5 +1,5 @@
-__module "mainfrag"
-__type "FRAG"
+#module "mainfrag"
+#type "FRAG"
 
 void main() {
     vec3 scene_origin = vec3(0.0,0.0,3.0);

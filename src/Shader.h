@@ -19,6 +19,7 @@ struct GL_UniformInfo {
     GLsizei size;
     GLenum  type;
 };
+
 class Shader {
 public:
 

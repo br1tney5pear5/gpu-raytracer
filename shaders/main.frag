@@ -1,15 +1,15 @@
-__module "mainfrag"
-__uses "types"
-__uses "quaternion"
-__uses "math"
-__uses "colors"
-__uses "util"
-__uses "intersect"
+#module "mainfrag"
+#uses "types"
+#uses "quaternion"
+#uses "math"
+#uses "ssbo"
+#uses "util"
+#uses "intersect"
+#uses "simplex"
 
-__type "FRAG"
+#type "FRAG"
 
-
-
+out vec4 out_color;
 Ray rays[MAX_RAY_STEPS + 1];
 Hit hits[MAX_RAY_STEPS + 1];
 
@@ -17,8 +17,7 @@ Camera camera;
 Ray cam_ray;
 
 void main() {
-
-    camera.position = vec3(0.0,1.0,-5.0);
+    camera.position = vec3(0.0,0.0,-3.0);
     camera.direction = vec3(0.0,0.0,0.0);
 
     //LAMP
@@ -34,6 +33,7 @@ void main() {
     vec3 out_col = vec3(0.0);
     Hit lightprobe;
 
+#if 1
     vec3 lightbleed = vec3(0.0);
 #ifdef LIGHTBLEED
     for(int rpp = 0; rpp < RAYS_PER_FRAGMENT; rpp++) {
@@ -49,7 +49,7 @@ void main() {
             lightbleed += emission;
         }
     }
-    lightbleed /= RAYS_PER_FRAGMENT * 2;
+    lightbleed /= RAYS_PER_FRAGMENT * 3;
 #endif
     for(int rpp = 0; rpp < RAYS_PER_FRAGMENT; rpp++) {
       vec3 color = vec3(0.0);
@@ -66,11 +66,8 @@ void main() {
 
           if(hits[r].t > EPS) {
               vec3 lift = hits[r].normal * EPS;
-              
-              if(mat.opacity < trand(campos.xy,r) && hits[r].type != PLANE_HIT) {
-                  // vec3 refr = rays[r].direction;
 
-                  // if(sign(dot(hits[r].normal, rays[r].direction)) < 0.0) {lift = -lift;}
+              if(mat.opacity < trand(campos.xy,r) && hits[r].type != PLANE_HIT) {
                   float curr_eta = prev_eta / mat.eta;
                   vec3 refr =
                       normalize(refract(hits[r].normal,rays[r].direction, curr_eta) +
@@ -78,8 +75,6 @@ void main() {
 
                   prev_eta = mat.eta;
 
-                      // normalize(reflect(hits[r].normal, rays[r].direction) +
-                      //           prand_uvec3(campos.xy,r) * mat.roughness);
                   rays[r + 1] = Ray(hits[r].point + lift
                                     , refr);
 
@@ -96,40 +91,54 @@ void main() {
       for(int i=r; i >= 0; i--) {
           if(hits[i].type == SKYBOX_HIT) {
               float l = (v_position.y + 1.0) * 0.5;
-              color += (1.0 - l) * RED + l * STEEL_BLUE;
-              color *= 0.1;
+              // color += (1.0 - l) * WHITE + l * STEEL_BLUE;
+              color = vec3(1.0);
+              color *= 0.3;
           } else {
               vec3 light = vec3(0.0);
               int lp = 0;
               // HARD LIGHT PROBLES, POINT LIGHTS
               // SOFT LIGHT PROBES
 #ifdef LIGHT
+              vec3 lift = hits[r].normal * EPS;
               for(lp = 0; lp < LIGHT_PROBES; lp++){
-                  lightprobe = intersect(Ray(hits[i].point,
-                                             normalize(hits[i].normal * 1.1 +
-                                                       prand_uvec3(campos.xy,r))));
-                  if(lightprobe.t > 0.0) {
+                  lightprobe = intersect(Ray(hits[i].point + lift,
+                        normalize(normalize(vec3(0.0, 1.99, 0.0) - hits[i].point) * 2.0 +
+                                  prand_uvec3(campos.xy,r)
+                                )));
+
+                  if(lightprobe.t > EPS) {
+                      Material hitmat = materials[hits[i].material];
                       Material mat = materials[lightprobe.material];
                       vec3 emission = max(vec3(0.0), mat.albedo - vec3(1.0));
-                      light += emission;
+                      light += emission * mat.roughness * (1.0/mat.eta);
                   }
               }
-              color += light / float(lp);
-#endif
 
+              // color += (light / float(lp)) * min(1.0/pow(length(color) - 0.42,2.0), 2.0);
+              if(lp > 0) color += (light / float(lp)) * 0.2;//min(1.0/pow(length(color) - 0.42,2.0), 2.0);
+#endif // LIGHT
               Material mat = materials[hits[i].material];
               vec3 emission = max(mat.albedo - vec3(1.0), vec3(0.0));
               vec3 reflection = mat.albedo - emission;
 
               color *= reflection;
               color += emission;
-
           }
       }
       out_col += color + lightbleed;
     }
     out_col /= float(RAYS_PER_FRAGMENT);
-    out_col = sqrt(out_col);
 
-    gl_FragColor = vec4(out_col, 1.0);
+    // out_col = sqrt(out_col);
+#else
+    cam_ray.origin = vec3(0.0,0.0,-4.0);
+    cam_ray.direction = (v_position.xyz + FORWARD);
+    out_col = vec3(0.0);
+    float val = mesh_intersect(cam_ray);
+    if(val > 0.0) out_col = vec3(val/5.0,0.0,1.0);
+    else out_col = vec3(0.0,0.0,1.0);
+#endif
+
+    out_color = vec4(out_col, 1.0);
 }

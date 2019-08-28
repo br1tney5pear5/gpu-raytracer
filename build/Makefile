@@ -123,19 +123,6 @@ out/fast:
 	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/build
 .PHONY : out/fast
 
-#=============================================================================
-# Target rules for targets named test
-
-# Build rule for target.
-test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test
-.PHONY : test
-
-# fast build rule for target.
-test/fast:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
-.PHONY : test/fast
-
 src/Shader.o: src/Shader.cpp.o
 
 .PHONY : src/Shader.o
@@ -143,7 +130,6 @@ src/Shader.o: src/Shader.cpp.o
 # target to build an object file
 src/Shader.cpp.o:
 	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/Shader.cpp.o
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Shader.cpp.o
 .PHONY : src/Shader.cpp.o
 
 src/Shader.i: src/Shader.cpp.i
@@ -153,7 +139,6 @@ src/Shader.i: src/Shader.cpp.i
 # target to preprocess a source file
 src/Shader.cpp.i:
 	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/Shader.cpp.i
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Shader.cpp.i
 .PHONY : src/Shader.cpp.i
 
 src/Shader.s: src/Shader.cpp.s
@@ -163,38 +148,7 @@ src/Shader.s: src/Shader.cpp.s
 # target to generate assembly for a file
 src/Shader.cpp.s:
 	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/Shader.cpp.s
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/Shader.cpp.s
 .PHONY : src/Shader.cpp.s
-
-src/ShaderBuilder.o: src/ShaderBuilder.cpp.o
-
-.PHONY : src/ShaderBuilder.o
-
-# target to build an object file
-src/ShaderBuilder.cpp.o:
-	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/ShaderBuilder.cpp.o
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/ShaderBuilder.cpp.o
-.PHONY : src/ShaderBuilder.cpp.o
-
-src/ShaderBuilder.i: src/ShaderBuilder.cpp.i
-
-.PHONY : src/ShaderBuilder.i
-
-# target to preprocess a source file
-src/ShaderBuilder.cpp.i:
-	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/ShaderBuilder.cpp.i
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/ShaderBuilder.cpp.i
-.PHONY : src/ShaderBuilder.cpp.i
-
-src/ShaderBuilder.s: src/ShaderBuilder.cpp.s
-
-.PHONY : src/ShaderBuilder.s
-
-# target to generate assembly for a file
-src/ShaderBuilder.cpp.s:
-	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/ShaderBuilder.cpp.s
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/ShaderBuilder.cpp.s
-.PHONY : src/ShaderBuilder.cpp.s
 
 src/main.o: src/main.cpp.o
 
@@ -223,33 +177,6 @@ src/main.cpp.s:
 	$(MAKE) -f CMakeFiles/out.dir/build.make CMakeFiles/out.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
-test/test.o: test/test.cpp.o
-
-.PHONY : test/test.o
-
-# target to build an object file
-test/test.cpp.o:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/test/test.cpp.o
-.PHONY : test/test.cpp.o
-
-test/test.i: test/test.cpp.i
-
-.PHONY : test/test.i
-
-# target to preprocess a source file
-test/test.cpp.i:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/test/test.cpp.i
-.PHONY : test/test.cpp.i
-
-test/test.s: test/test.cpp.s
-
-.PHONY : test/test.s
-
-# target to generate assembly for a file
-test/test.cpp.s:
-	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/test/test.cpp.s
-.PHONY : test/test.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -257,21 +184,14 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... rebuild_cache"
-	@echo "... edit_cache"
 	@echo "... out"
-	@echo "... test"
+	@echo "... edit_cache"
 	@echo "... src/Shader.o"
 	@echo "... src/Shader.i"
 	@echo "... src/Shader.s"
-	@echo "... src/ShaderBuilder.o"
-	@echo "... src/ShaderBuilder.i"
-	@echo "... src/ShaderBuilder.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
-	@echo "... test/test.o"
-	@echo "... test/test.i"
-	@echo "... test/test.s"
 .PHONY : help
 
 

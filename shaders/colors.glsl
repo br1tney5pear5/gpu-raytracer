@@ -1,4 +1,4 @@
-__module "colors"
+#module "colors"
 
 #define MAROON vec3(0.501961,0.0,0.0)
 #define DARK_RED vec3(0.545098,0.0,0.0)

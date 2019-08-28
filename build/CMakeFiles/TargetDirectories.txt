@@ -1,4 +1,3 @@
 /shared/projects/raytracer/build/CMakeFiles/rebuild_cache.dir
-/shared/projects/raytracer/build/CMakeFiles/edit_cache.dir
 /shared/projects/raytracer/build/CMakeFiles/out.dir
-/shared/projects/raytracer/build/CMakeFiles/test.dir
+/shared/projects/raytracer/build/CMakeFiles/edit_cache.dir

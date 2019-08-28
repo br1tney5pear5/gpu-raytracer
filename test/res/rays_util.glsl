@@ -1,7 +1,7 @@
-__module "rays_util"
-__uses "quaternion"
-__uses "random"
-__uses "constants"
+#module "rays_util"
+#uses "quaternion"
+#uses "random"
+#uses "constants"
 
 
 vec3 reflect(vec3 n, vec3 v) {

@@ -1,4 +1,4 @@
-__module "types"
+#module "types"
 
 
 struct PointLight{
@@ -36,7 +36,13 @@ struct Sphere{
 struct Plane{
     vec3 position;
     vec3 normal;
-    float size;
+    vec2 size;
+    int material;
+};
+struct Box {
+    vec3 position;
+    vec3 size;
+    mat4 rotation;
     int material;
 };
 struct Camera{

@@ -5,11 +5,8 @@ CMakeFiles/out.dir/src/Shader.cpp.o: ../src/Logger.h
 CMakeFiles/out.dir/src/Shader.cpp.o: ../src/Shader.cpp
 CMakeFiles/out.dir/src/Shader.cpp.o: ../src/Shader.h
 
-CMakeFiles/out.dir/src/ShaderBuilder.cpp.o: ../src/ShaderBuilder.cpp
-CMakeFiles/out.dir/src/ShaderBuilder.cpp.o: ../src/ShaderBuilder.h
-
+CMakeFiles/out.dir/src/main.cpp.o: ../include/modular-glsl.h
 CMakeFiles/out.dir/src/main.cpp.o: ../src/Logger.h
 CMakeFiles/out.dir/src/main.cpp.o: ../src/Shader.h
-CMakeFiles/out.dir/src/main.cpp.o: ../src/ShaderBuilder.h
 CMakeFiles/out.dir/src/main.cpp.o: ../src/main.cpp
 

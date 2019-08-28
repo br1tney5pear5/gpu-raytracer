@@ -1,4 +1,4 @@
-__module "uniforms"
+#module "uniforms"
 
 uniform float u_time;
 uniform float u_resolution;

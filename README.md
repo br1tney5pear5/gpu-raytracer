@@ -37,13 +37,13 @@ Also if you add module and its not used my root module or any of it's dependenci
 To resolve dependencies, warn you if it detect a circular or missing one, ShaderBuilder needs every module to declare modules used by it.
 
 ```glsl
-__modules "uniforms"
+#modules "uniforms"
 
 uniform float u_time;
 ```
 
 ```glsl
-__modules "structs"
+#modules "structs"
 
 struct Sphere {
   vec3 position;
@@ -53,8 +53,8 @@ struct Sphere {
 ```
 
 ```glsl
-__modules "random"
-__uses "unifroms"
+#modules "random"
+#uses "unifroms"
 
 float rand(vec2 seed) {
     return fract(sin(dot(seed.xy, vec2(12.9898,78.233))) * 43758.5453123 + u_time);
@@ -63,9 +63,9 @@ float rand(vec2 seed) {
 ```
 
 ```glsl
-__modules "util"
-__uses "random"
-__uses "structs"
+#modules "util"
+#uses "random"
+#uses "structs"
 
 vec3 random_sphere(vec3 position, vec2 seed) {
   return Sphere(pos, rand(seed));

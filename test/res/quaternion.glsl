@@ -1,5 +1,5 @@
-__module "quaternion"
-__uses "constants"
+#module "quaternion"
+#uses "constants"
 
 // Prefix Legend
 // n - normalized input

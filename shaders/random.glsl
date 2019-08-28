@@ -1,5 +1,5 @@
-__module "random"
-__uses "uniforms" // needs u_time
+#module "random"
+#uses "uniforms" // needs u_time
 
 // Prefixes legend
 // p - pseudo (pseudo random number generator)
